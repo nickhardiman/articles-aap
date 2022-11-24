@@ -5,7 +5,7 @@ Nick Hardiman
 
 A connected/online install on new virtual machines
 
-== Install tasks  with Internet access (not required)
+== install the AAP2 installer package
 
 If Internet access is made available, an installer RPM can be used instead of the setup bundle. 
 
