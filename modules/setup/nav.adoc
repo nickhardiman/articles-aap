@@ -1,4 +1,4 @@
 * xref:index.adoc[]
-** xref:install-manual-disconnected[]
-** xref:install-manual-connected[]
+** xref:install-manual-disconnected.adoc[]
+** xref:install-manual-connected.adoc[]
 ** xref:install-auto-connected.adoc[]
