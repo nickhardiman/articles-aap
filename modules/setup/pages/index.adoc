@@ -1,0 +1,10 @@
+= setup
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 24-11-2022
+
+* topologies
+* A disconnected install on new virtual machines
+* A connected install on new virtual machines
+* A connected install on Openshift
+

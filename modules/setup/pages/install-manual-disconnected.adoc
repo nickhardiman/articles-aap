@@ -1,0 +1,165 @@
+= setup
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 24-11-2022
+
+A disconnected install on new virtual machines
+
+== hardware and network tasks
+
+Find or create an installer host. 
+This may be a bastion host with ansible core installed. 
+It will require SSH access and privilege escalation (the root account) on the new VMs. 
+
+
+Create three machines for AAP2: controller, hub and database.
+
+== supporting services 
+
+* git repo
+* DNS 
+* DHCP
+* PKI
+* LDAP
+* OAuth
+* log
+* monitor
+* load balancer 
+
+
+== OS  tasks
+
+. https://docs.ansible.com/automation-controller/latest/html/administration/license-support.html#attaching-subscriptions[Attach a valid subscription] to the  VMs.
+. Update packages. 
+
+== SSH tasks 
+
+This requires configuration to allow the setup script to SSH to the other VMs and use elevated privileges. 
+
+Either SSH as ansible user
+
+. Add the ansible user account.
+. Generate a key pair. 
+. Transfer keys to enable SSH access from installer host to the VMs. 
+. Add password-less sudo config. 
+. Check privilege escalation for the ansible user account. 
+
+Or enable root login from installer host to both VMs.
+. Copy root's public key from controller to _authorized_hosts_ to managed nodes. 
+
+The setup script runs a playbook which tries to SSH to all hosts. 
+If setup.sh is run on the controller host, the script tries to SSH to itself. 
+This can be avoided by adding _ansible_connection=local_ to the inventory. 
+
+
+== subscription tasks
+
+Download a subscription manifest. 
+
+. Login to the Red Hat Portal. 
+. Create a https://access.redhat.com/management/subscription_allocations[subscription allocation].
+. https://docs.ansible.com/automation-controller/latest/html/userguide/import_license.html#obtain-sub-manifest[Download the subscription manifest.zip file] from the Red Hat portal. 
+. View manifest information with the command `rct cat-manifest my_manifest.zip`.
+
+
+[NOTE]
+====
+The 
+https://access.redhat.com/documentation/en-us/reference_architectures/2021/html-single/deploying_ansible_automation_platform_2.1/index#sub_manifest[AAP2 reference architecture] 
+document has an example of a subscription manifest download.
+====
+
+== extra tasks for hardened machines
+
+Enable exec on /tmp and /var/tmp.
+This older article may help.  
+https://access.redhat.com/solutions/4308791[How Can I Bypass "noexec" Permission Issue On "/tmp" and "/var/tmp" During Ansible Tower and Ansible Automation Platform installation?]
+
+== Create X.509 certificates 
+
+== Create passwords 
+
+Create passwords for these inventory attributes. 
+
+* admin_password
+* pg_password
+* automationhub_admin_password
+* automationhub_pg_password
+
+Set a password policy. 
+eg. 
+Include at least one upper case, lower case, digit, and punctuation character.
+Minimum length is 8 characters. 
+Use the _openssl_ command to generate a random password. 
+This command uses base64 encoding to translate from binary to printable characters. 
+This limits the amount of punctuation that may be included in the password, and makes it longer.  
+Base64 only contains these sets of characters: A–Z , a–z , 0–9 , + , / and = .
+
+.generate a random password
+```shell
+openssl rand -base64 8
+```
+
+Using special characters in a password can cause install issues. 
+For AAP v2.2 and Postgresql 13, these are the safe and unsafe punctuation characters. 
+
+* Unsafe punctuation: ! " '
+* Safe punctuation for *admin_password*, *pg_password*, and *automationhub_pg_password*: @ £ $ % ^ & * ( ) _ + - = { } | [ ] \ : ; < > ? , . /
+* Safe punctuation for *automationhub_admin_password*: @ . + , / =
+
+== Prepare a credentials file
+
+Encrypt admin, database and hub passwords (https://www.ansible.com/blog/securing-tower-installer-passwords).
+Copy password attributes to a separate file and encrypt the file using vault. 
+
+Passwords can be encrypted inline in a YAML inventory, but this is more difficult and not required. 
+
+.plaintext YAML file credentials.yml
+```[YAML]
+admin_password: 'A random password'
+pg_password: 'Another password'
+automationhub_pg_password: 'A password'
+```
+
+.encrypt the file  
+```shell
+echo "A password for encryption" > file-containing-password
+ansible-vault encrypt  \
+   --vault-id file-containing-password \
+   credentials.yml 
+```
+
+
+.encrypted vault file credentials.yml
+```
+$ANSIBLE_VAULT;1.1;AES256
+3564643539613533353838393036633461376539262653730643665386533623266396164653835
+626430666532386664363438363664663039323616435640a333238313232356635353831353834
+3061376335623338643336383837373662616616162373064363666313539363066613866663963
+```
+
+== prepare the bundle installer 
+
+. Get the setup bundle file from the https://access.redhat.com/downloads/content/480[Red Hat Ansible Automation Platform Product Software download] page. 
+. Put it on the installer host in /var/tmp/.
+. Unpack the file to create the installer directory. `tar xf ansible-automation-platform-setup-bundle-2.2.0.tar.gz`
+. Back up the factory-fitted inventory file. `cp inventory inventory-bak`
+
+== customize the inventory file 
+
+
+[source,shell]
+....
+nope
+....
+
+== install
+
+[source,shell]
+....
+cd installer-directory/ 
+export ANSIBLE_BECOME=True
+export ANSIBLE_BECOME_METHOD='sudo'
+export ANSIBLE_HOST_KEY_CHECKING=False
+./setup.sh -e @credentials.yml -- --ask-vault-pass
+....
