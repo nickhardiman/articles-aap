@@ -1,9 +1,9 @@
-= setup
+= disconnected manual install
 Nick Hardiman 
 :source-highlighter: highlight.js
 :revdate: 24-11-2022
 
-A disconnected install on new virtual machines
+A disconnected/offline install on new virtual machines
 
 == hardware and network tasks
 

@@ -1,0 +1,8 @@
+= connected auto install
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 24-11-2022
+
+A connected/online install on new virtual machines
+
+https://github.com/nickhardiman/vm-aap2

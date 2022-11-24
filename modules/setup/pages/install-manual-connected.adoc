@@ -1,0 +1,18 @@
+= connected manual install
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 24-11-2022
+
+A connected/online install on new virtual machines
+
+== Install tasks  with Internet access (not required)
+
+If Internet access is made available, an installer RPM can be used instead of the setup bundle. 
+
+. Enable AAP2 repo (Most recent version on Tuesday 8 November 2022 is ansible-automation-platform-2.2-for-rhel-8-x86_64-rpms, "Red Hat Ansible Automation Platform 2.2 for RHEL 8 x86_64 (RPMs)") on all machines.
+. https://access.redhat.com/documentation/en-us/red_hat_ansible_automation_platform/2.2/html-single/red_hat_ansible_automation_platform_installation_guide/index#choosing_and_obtaining_a_red_hat_ansible_automation_platform_installer[Install] installer RPM _ansible-automation-platform-installer_ to create installer directory
+
+The installer directory os /opt/ansible-automation-platform/installer/.
+This is owned by root with no permissions for others. 
+
+If the setup.sh script is run by the ansible user, group ownership of the installer directory and setup.log can be changed. 
