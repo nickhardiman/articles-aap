@@ -1,0 +1,237 @@
+= ansible-navigator
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 24-11-2022
+
+
+https://ansible-navigator.readthedocs.io/en/latest/faq/#
+
+Placement of ansible collections
+https://ansible-navigator.readthedocs.io/en/latest/faq/#placement-of-ansible-collections
+
+
+== commands
+
+[source,shell]
+....
+ansible-navigator config --eei hub1.lab.example.com/ee-supported-rhel8 -m stdout dump
+....
+
+[source,shell]
+....
+ansible-navigator settings --eei hub1.lab.example.com/ee-supported-rhel8 \
+  -m stdout dump > ansible-navigator-settings
+vim ansible-navigator-settings
+....
+
+[source,shell]
+....
+ansible-navigator doc --mode stdout --type inventory redhat.satellite.foreman
+mv ansible-navigator ansible-navigator.yml
+....
+
+[source,shell]
+....
+podman login hub1.lab.example.com
+....
+
+* user: admin
+* pass: redhat
+
+
+[source,shell]
+....
+ansible-navigator run buildserver.yml \
+  --eei hub1.lab.example.com/my_new_ee  \
+  --ask-become-pass \
+  --mode=stdout \
+  --playbook-artifact-enable=false
+....
+
+
+== podman command for a container run
+
+Find this command in ansible-navigator.log.  
+Add this option to ansible-navigator command
+  `--log-level debug`
+and  check log
+  `grep 'container engine invocation' ansible-navigator.log`
+
+[source,shell]
+----
+[nick@host2 user]$ grep 'container engine invocation' ansible-navigator.log
+2022-10-07T14:51:08.194976+00:00 DEBUG 'ansible-runner.wrap_args_for_containerization' container engine invocation: podman run --rm --tty --interactive -v /home/nick/ansible/user/:/home/nick/ansible/user/ --workdir /home/nick/ansible/user -v /tmp/ssh-XXXXXXYQVux3/:/tmp/ssh-XXXXXXYQVux3/ -e SSH_AUTH_SOCK=/tmp/ssh-XXXXXXYQVux3/agent.529251 -v /home/nick/.ssh/:/home/runner/.ssh/ -v /home/nick/.ssh/:/root/.ssh/ --group-add=root --ipc=host -v /tmp/ansible-navigator_1mzf5x19/artifacts/:/runner/artifacts/:Z -v /tmp/ansible-navigator_1mzf5x19/:/runner/:Z --env-file /tmp/ansible-navigator_1mzf5x19/artifacts/df767843-4a57-4ab6-896d-9e7e82c3602a/env.list --quiet --name ansible_runner_df767843-4a57-4ab6-896d-9e7e82c3602a registry.redhat.io/ansible-automation-platform-22/ee-supported-rhel8:latest ansible-playbook /home/nick/ansible/user/user.yml -i /home/nick/ansible/user/inventory.ini
+[nick@host2 user]$
+----
+
+Extract the very long podman command from that line and you end up with this. 
+
+[source,shell]
+....
+podman run --rm --tty --interactive \
+  -v /home/nick/ansible/user/:/home/nick/ansible/user/ \
+  -v /home/nick/.ssh/:/home/runner/.ssh/ \
+  -v /home/nick/.ssh/:/root/.ssh/ \
+  -v /tmp/ansible-navigator_1mzf5x19/artifacts/:/runner/artifacts/:Z \
+  -v /tmp/ansible-navigator_1mzf5x19/:/runner/:Z \
+  -v /tmp/ssh-XXXXXXYQVux3/:/tmp/ssh-XXXXXXYQVux3/ \
+  -e SSH_AUTH_SOCK=/tmp/ssh-XXXXXXYQVux3/agent.529251 \
+  --group-add=root \
+  --ipc=host \
+  --workdir /home/nick/ansible/user \
+  --env-file /tmp/ansible-navigator_1mzf5x19/artifacts/df767843-4a57-4ab6-896d-9e7e82c3602a/env.list \
+  --quiet \
+  --name ansible_runner_df767843-4a57-4ab6-896d-9e7e82c3602a \
+  registry.redhat.io/ansible-automation-platform-22/ee-supported-rhel8:latest ansible-playbook /home/nick/ansible/user/user.yml \
+  -i /home/nick/ansible/user/inventory.ini
+....
+
+=== ~/.ssh mounts
+
+mounts ~/.ssh in a couple places
+
+mounts ssh-agent socket
+
+=== $SSH_AUTH_SOCK
+
+[source,shell]
+----
+[nick@host2 user]$ echo $SSH_AUTH_SOCK
+/tmp/ssh-XXXXXXYQVux3/agent.529251
+[nick@host2 user]$
+----
+
+[source,shell]
+----
+podman run --rm --tty --interactive \
+  -v /home/nick/.ssh/:/home/runner/.ssh/ \
+  -v /home/nick/.ssh/:/root/.ssh/ \
+  -v /tmp/ssh-XXXXXXYQVux3/:/tmp/ssh-XXXXXXYQVux3/ \
+  -e SSH_AUTH_SOCK=/tmp/ssh-XXXXXXYQVux3/agent.529251 \
+  ...
+----
+
+=== bash environment variables ANSIBLE_REMOTE_USER and ANSIBLE_PRIVATE_KEY_FILE
+
+no point setting ANSIBLE_PRIVATE_KEY_FILE becaaose
+
+If no config files exist
+
+[source,shell]
+----
+export ANSIBLE_REMOTE_USER=ansible_user
+# use the mount point in the container, not /home/nick/ or ~/
+# tilde is expanded by the shell to /home/nick/.
+export ANSIBLE_PRIVATE_KEY_FILE=/root/.ssh/ansible-key.priv
+ansible-navigator  -m stdout --inventory='builder2.lab.example.com,' \
+  --log-level debug \
+  run ping.yml
+----
+
+
+=== playbook-artifact-enable?
+
+--playbook-artifact-enable=false
+may mount local keys?
+
+
+=== volume-mounts: in ansible-navigator.yml
+
+turns this
+
+[source,shell]
+----
+  ansible-navigator run buildserver.yml \
+    --eei hub1.lab.example.com/my_new_ee  \
+    --pull-policy missing \
+    --mode=stdout \
+    --playbook-artifact-enable=false
+----
+
+into this
+
+[source,shell]
+----
+  ansible-navigator run ping.yml  -m stdout
+----
+
+=== ansible-navigator.yml
+
+[source,shell]
+----
+# https://ansible-navigator.readthedocs.io/en/latest/settings/
+---
+ansible-navigator:
+  ansible:
+    config:
+      path: ./ansible.cfg
+  execution-environment:
+    environment-variables:
+      set:
+        ANSIBLE_PIPELINING: true
+    image: hub1.lab.example.com/my_new_ee:latest
+    #image: ee-supported-rhel8:latest
+    pull:
+      policy: missing
+    volume-mounts:
+       - src: "/home/nick/.ssh/ansible-key.priv"
+         dest: "/home/nick/.ssh/ansible-key.priv"
+         options: "Z"
+----
+
+=== ansible.cfg
+
+[source,shell]
+----
+[defaults]
+inventory=inventory
+remote_user=ansible_user
+private_key_file = /home/nick/.ssh/ansible-key.priv
+callbacks_enabled=timer, profile_tasks, profile_roles
+----
+
+
+
+== ssh login from container to managed node
+
+see
+https://ansible-navigator.readthedocs.io/en/latest/faq/#ssh-keys
+
+=== with remote_user and ssh-agent
+
+Use ssh-agent, ssh-add and ansible-navigator to run a container with the correct user and private key for SSH access. 
+
+Using your own account and private key in the default file (~/.ssh/id_rsa) works OK.
+Using another account or key may not work. 
+In this example the user is _ansible_user_ and the private key is in file /home/nick/.ssh/ansible-key.priv.
+
+User in the container defaults to root.
+
+[source,shell]
+....
+ssh host2
+cd /home/nick/ansible/ping
+cat ansible.cfg
+....
+
+.config file ansible.cfg
+[source,ini]
+----
+# https://docs.ansible.com/ansible/latest/reference_appendices/config.html
+[defaults]
+inventory=./inventory.ini
+remote_user = ansible_user
+private_key_file = /home/nick/.ssh/ansible-key.priv
+----
+
+.commands
+[source,shell]
+....
+# https://docs.ansible.com/ansible/latest/user_guide/connection_details.html#setting-up-ssh-keys
+ssh-agent bash
+ssh-add /home/nick/.ssh/ansible-key.priv
+# get container registry.redhat.io/ansible-automation-platform-22/ee-supported-rhel8:latest
+podman login -u nickhardiman registry.redhat.io
+ansible-navigator  -m stdout --log-level debug run user.yml
+....
+

@@ -8,3 +8,108 @@ Nick Hardiman
 * A connected install on new virtual machines
 * A connected install on Openshift
 
+
+== HA High Availability
+
+Duplicate AAP clusters in two data centers can't be active/active.
+AAP don't have active/active HA DB implementation yet
+
+active/passive
+https://access.redhat.com/documentation/en-us/reference_architectures/2021/html-single/deploying_ansible_automation_platform_2.1/index
+
+==  links
+
+Red Hat Ansible Automation Platform Database Scope of Coverage
+https://access.redhat.com/articles/4010491
+
+Ansible Automation Platform 2.0 Release FAQ
+https://access.redhat.com/articles/6192881
+
+Red Hat Ansible Automation Platform 2: Automating the Installer Download and publishing as a Content View in Satellite
+https://www.redhat.com/en/blog/automating-installation-ansible-automation-platform-ansible-and-satellite
+
+Ansible Automation Platform Certified Content
+https://access.redhat.com/articles/3642632
+
+AAP in Microsoft Azure
+https://videos.learning.redhat.com/playlist/dedicated/170921281/1_sjazyvyn/1_b9p51ctd
+
+https://www.redhat.com/sysadmin/6-code-pushes-aap
+Edge Automation with NetGitOps on Red Hat Ansible Automation Platform 2
+https://www.ansible.com/blog/edge-automation-with-netgitops-on-red-hat-ansible-automation-platform-2
+
+== components
+
+products
+
+. automation mesh
+. ansible core
+. ansible controller
+. ansible automation hub
+. ansible execution environment
+. ansible content collections
+. ansible automation services catalog
+. ansible navigator
+. ansible builder
+. ansible-runner
+. ansible receptor
+. bindep
+
+node types
+
+. Control plane
+. Execution
+. Hop
+. Hybrid
+
+== support 
+
+Red Hat Ansible Automation Platform Database Scope of Coverage
+https://access.redhat.com/articles/4010491
+
+
+== automation mesh
+
+https://www.ansible.com/blog/peeling-back-the-layers-and-understanding-automation-mesh
+
+== ee (Execution Environment)
+
+Execution Environments are container images that serve as Ansible control nodes.
+
+How Do I Create a New Execution Environment For Ansible Automation Platform 2.x?
+https://access.redhat.com/solutions/6654601
+
+== ansible-runner
+
+https://ansible-runner.readthedocs.io/en/latest/
+https://ansible-runner.readthedocs.io/en/latest/execution_environments/
+
+== ansible receptor
+
+Receptor is an overlay network intended to ease the distribution of work across a large and dispersed collection of workers.
+https://github.com/ansible/receptor
+https://receptor.readthedocs.io/en/latest/
+
+== collections
+
+Placement of ansible collections
+https://ansible-navigator.readthedocs.io/en/latest/faq/#placement-of-ansible-collections
+
+== ansible navigator
+
+https://ansible-navigator.readthedocs.io/en/latest/faq/#
+
+== ansible builder
+
+https://ansible-builder.readthedocs.io/en/latest/
+https://access.redhat.com/documentation/en-us/red_hat_ansible_automation_platform/2.1/html-single/ansible_builder_guide/index
+Ansible Builder is a command line tool that automates the process of building automation execution environments by using the metadata defined in various Ansible Collections, as well as by the user.
+
+== bindep
+
+https://docs.opendev.org/opendev/bindep/latest/readme.html
+
+== training
+
+https://role.rhu.redhat.com/rol-rhu/app/courses/do374-2.0/pages/ch05
+https://role.rhu.redhat.com/rol-rhu/app/courses/do467-2.2/pages/ch03

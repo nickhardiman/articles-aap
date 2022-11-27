@@ -1,0 +1,499 @@
+= ansible-builder
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 24-11-2022
+
+Ansible Builder is an execution environment container builder.
+It creates consistent and reproducible automation execution environments for your Red Hat Ansible Automation Platform.
+
+
+https://access.redhat.com/documentation/en-us/red_hat_ansible_automation_platform/2.1/html-single/ansible_builder_guide/index
+
+tools installed with
+
+== commands
+
+
+[source,shell]
+----
+mkdir -p ~/builder/new
+cd ~/builder/new
+# config files
+vim execution-environment.yml
+vim requirements.yml
+vim requirements.txt
+vim bindep.txt
+# pull and build
+#   registry.redhat.io/ansible-automation-platform-22/ansible-builder-rhel8:latest
+#   hub1.lab.example.com/ee-minimal-rhel8:latest
+podman login -u nhardima1 registry.redhat.io
+ansible-builder build -t my_new_ee -v 3
+# check
+podman container run -it localhost/my_new_ee:latest ansible-galaxy collection list
+podman container run -it localhost/my_new_ee:latest pip3 freeze
+# copy to registry
+#podman save -o ~/my_new_ee.tar localhost/my_new_ee:latest
+podman tag localhost/my_new_ee hub1.lab.example.com/my_new_ee
+podman login -u admin hub1.lab.example.com
+podman push  hub1.lab.example.com/my_new_ee
+----
+
+== files
+
+
+[source,shell]
+----
+[nick@builder1 new]$ ls
+bindep.txt  context  execution-environment.yml  requirements.txt  requirements.yml
+[nick@builder1 new]$
+----
+
+=== execution-environment.yml
+
+[source,shell]
+----
+---
+version: 1
+
+build_arg_defaults:
+  EE_BASE_IMAGE: 'registry.redhat.io/ansible-automation-platform-22/ee-minimal-rhel8:latest'
+
+dependencies:
+  galaxy: requirements.yml
+  python: requirements.txt
+  system: bindep.txt
+----
+
+=== execution-environment.yml with dockerfile steps
+
+
+https://github.com/ansible/ansible-builder/issues/195
+
+[source,shell]
+----
+version: 1
+
+build_arg_defaults:
+  EE_BASE_IMAGE: 'registry.redhat.io/ansible-automation-platform-22/ee-supported-rhel8:latest'
+
+dependencies:
+  galaxy: requirements.yml
+  python: requirements.txt
+  system: bindep.txt
+
+additional_build_steps:
+  prepend: |
+    COPY *.pem /usr/share/pki/ca-trust-source/anchors/
+    RUN update-ca-trust
+----
+
+=== requirements.yml
+
+[source,shell]
+----
+---
+# run
+#   ansible-galaxy install -r roles/requirements.yml
+# This command installs roles to ~/.ansible/roles/
+# for more information, see
+#   https://galaxy.ansible.com/docs/using/installing.html
+#
+roles:
+  - src: https://github.com/nickhardiman/libvirt-guest
+  - src: https://github.com/nickhardiman/ansible-target
+  - src: https://github.com/nickhardiman/ansible-web-server
+  - src: https://github.com/nickhardiman/ansible-antora-generator
+  - name: geerlingguy.gitlab
+    version: 3.2.0
+collections:
+  - name: ansible.posix
+  - name: community.crypto
+    version: 2.5.0
+  - name: community.general
+  - name: community.libvirt
+  - name: containers.podman
+  - name: redhat.satellite
+----
+
+=== requirements.txt
+
+[source,shell]
+----
+cryptography
+----
+
+=== bindep.txt
+
+see https://pypi.org/project/bindep/
+
+[source,shell]
+----
+openssl [platform:rpm]
+bind-utils [platform:rhel-8 platform:rhel-9]
+----
+
+
+
+== build
+
+[source,shell]
+----
+podman login -u nhardima1 registry.redhat.io
+ansible-builder build -t my_new_ee -v 3
+----
+
+[source,shell]
+----
+[nick@builder1 new]$ ansible-builder build -t my_new_ee -v 3
+Ansible Builder is building your execution environment image. Tags: my_new_ee
+File context/_build/requirements.yml is already up-to-date.
+File context/_build/requirements.txt is already up-to-date.
+File context/_build/bindep.txt will be created.
+Rewriting Containerfile to capture collection requirements
+Running command:
+  podman build -f context/Containerfile -t my_new_ee context
+[1/3] STEP 1/7: FROM registry.redhat.io/ansible-automation-platform-22/ee-minimal-rhel8:latest AS galaxy
+Trying to pull registry.redhat.io/ansible-automation-platform-22/ee-minimal-rhel8:latest...
+Getting image source signatures
+Checking if image destination supports signatures
+Copying blob sha256:b336a633f9e2c8ec18c45427d7e957df6d20ec09e71eee92c2f3247bb63c2d66
+Copying blob sha256:16d68b48f6c1ca51503d139a87821c31392aef0834ad4a13ea3bf6a6ca12a606
+Copying blob sha256:e6e2ce63e5b3ee952fa4c1c3792876fc452cb6cf210958ff4cd9c40501a7ce7a
+Copying blob sha256:d6e3788a121c267b721a23e030dd339c41f70721e09bdf4b21051cfb22421025
+Copying config sha256:6604c44a4f9d1ddb8f7c9f807e587d18d4baeae25eb24dc2573c6ce9c8446493
+Writing manifest to image destination
+Storing signatures
+[1/3] STEP 2/7: ARG ANSIBLE_GALAXY_CLI_COLLECTION_OPTS=
+--> 88bd4996b79
+[1/3] STEP 3/7: USER root
+--> 391ee81fc2f
+[1/3] STEP 4/7: ADD _build /build
+--> abe6a6c8f4c
+[1/3] STEP 5/7: WORKDIR /build
+--> e42e9e781f1
+[1/3] STEP 6/7: RUN ansible-galaxy role install -r requirements.yml --roles-path "/usr/share/ansible/roles"
+Starting galaxy role install process
+- extracting libvirt-guest to /usr/share/ansible/roles/libvirt-guest
+- libvirt-guest was installed successfully
+- extracting ansible-target to /usr/share/ansible/roles/ansible-target
+- ansible-target was installed successfully
+- extracting ansible-web-server to /usr/share/ansible/roles/ansible-web-server
+- ansible-web-server was installed successfully
+- extracting ansible-antora-generator to /usr/share/ansible/roles/ansible-antora-generator
+- ansible-antora-generator was installed successfully
+- downloading role 'gitlab', owned by geerlingguy
+- downloading role from https://github.com/geerlingguy/ansible-role-gitlab/archive/3.2.0.tar.gz
+- extracting geerlingguy.gitlab to /usr/share/ansible/roles/geerlingguy.gitlab
+- geerlingguy.gitlab (3.2.0) was installed successfully
+--> 224241bb1e1
+[1/3] STEP 7/7: RUN ANSIBLE_GALAXY_DISABLE_GPG_VERIFY=1 ansible-galaxy collection install $ANSIBLE_GALAXY_CLI_COLLECTION_OPTS -r requirements.yml --collections-path "/usr/share/ansible/collections"
+Starting galaxy collection install process
+Process install dependency map
+Starting collection install process
+Downloading https://galaxy.ansible.com/download/community-libvirt-1.2.0.tar.gz to /home/runner/.ansible/tmp/ansible-local-1tka_rqv8/tmphul016fb/community-libvirt-1.2.0-v62driq4
+Installing 'community.libvirt:1.2.0' to '/usr/share/ansible/collections/ansible_collections/community/libvirt'
+community.libvirt:1.2.0 was installed successfully
+Downloading https://galaxy.ansible.com/download/ansible-posix-1.4.0.tar.gz to /home/runner/.ansible/tmp/ansible-local-1tka_rqv8/tmphul016fb/ansible-posix-1.4.0-441r5h7o
+Installing 'ansible.posix:1.4.0' to '/usr/share/ansible/collections/ansible_collections/ansible/posix'
+ansible.posix:1.4.0 was installed successfully
+Downloading https://galaxy.ansible.com/download/community-general-5.6.0.tar.gz to /home/runner/.ansible/tmp/ansible-local-1tka_rqv8/tmphul016fb/community-general-5.6.0-klhb14rp
+Installing 'community.general:5.6.0' to '/usr/share/ansible/collections/ansible_collections/community/general'
+community.general:5.6.0 was installed successfully
+--> d56034ce8da
+[2/3] STEP 1/6: FROM registry.redhat.io/ansible-automation-platform-22/ansible-builder-rhel8:latest AS builder
+[2/3] STEP 2/6: COPY --from=galaxy /usr/share/ansible /usr/share/ansible
+--> 76e19e017a9
+[2/3] STEP 3/6: ADD _build/requirements.txt requirements.txt
+--> 35141d1e0c2
+[2/3] STEP 4/6: ADD _build/bindep.txt bindep.txt
+--> abf23dc37a5
+[2/3] STEP 5/6: RUN ansible-builder introspect --sanitize --user-pip=requirements.txt --user-bindep=bindep.txt --write-bindep=/tmp/src/bindep.txt --write-pip=/tmp/src/requirements.txt
+# Sanitized dependencies for /usr/share/ansible/collections
+---
+python:
+- 'cryptography  # from collection user'
+system:
+- 'rsync [platform:rhel-8 platform:rhel-9]  # from collection ansible.posix'
+- 'openssl [platform:rpm]  # from collection user'
+
+Creating parent directory for /tmp/src/requirements.txt
+--> 0d3a08dcbce
+[2/3] STEP 6/6: RUN assemble
+++ source /etc/os-release
++++ NAME='Red Hat Enterprise Linux'
++++ VERSION='8.6 (Ootpa)'
++++ ID=rhel
++++ ID_LIKE=fedora
++++ VERSION_ID=8.6
++++ PLATFORM_ID=platform:el8
++++ PRETTY_NAME='Red Hat Enterprise Linux 8.6 (Ootpa)'
++++ ANSI_COLOR='0;31'
++++ CPE_NAME=cpe:/o:redhat:enterprise_linux:8::baseos
++++ HOME_URL=https://www.redhat.com/
++++ DOCUMENTATION_URL=https://access.redhat.com/documentation/red_hat_enterprise_linux/8/
++++ BUG_REPORT_URL=https://bugzilla.redhat.com/
++++ REDHAT_BUGZILLA_PRODUCT='Red Hat Enterprise Linux 8'
++++ REDHAT_BUGZILLA_PRODUCT_VERSION=8.6
++++ REDHAT_SUPPORT_PRODUCT='Red Hat Enterprise Linux'
++++ REDHAT_SUPPORT_PRODUCT_VERSION=8.6
+++ echo rhel
++ RELEASE=rhel
++ PKGMGR=
++ PKGMGR_OPTS=
++ '[' -z ']'
++ PKGMGR=/usr/bin/dnf
++ '[' -f /usr/bin/microdnf ']'
++ PKGMGR=/usr/bin/microdnf
++ '[' -z ']'
++ PKGMGR_OPTS='--nodocs --setopt install_weak_deps=0'
++ mkdir -p /output/bindep
++ mkdir -p /output/wheels
++ mkdir -p /tmp/src
++ cd /tmp/src
++ /usr/bin/microdnf update -y
+Downloading metadata...
+Downloading metadata...
+Downloading metadata...
+Downloading metadata...
+Downloading metadata...
+Package                                                 Repository          Size
+Installing:
+ gnupg2-smime-2.2.20-3.el8_6.x86_64                     ubi-8-baseos    289.9 kB
+ libsecret-0.18.6-1.el8.x86_64                          ubi-8-baseos    166.9 kB
+ pinentry-1.1.0-2.el8.x86_64                            ubi-8-appstream 102.3 kB
+ platform-python-pip-9.0.3-22.el8.noarch                ubi-8-baseos      1.7 MB
+Upgrading:
+ ca-certificates-2022.2.54-80.2.el8_6.noarch            ubi-8-baseos    942.8 kB
+  replacing ca-certificates-2021.2.50-80.0.el8_4.noarch
+ gnupg2-2.2.20-3.el8_6.x86_64                           ubi-8-baseos      2.5 MB
+  replacing gnupg2-2.2.20-2.el8.x86_64
+ libdnf-0.63.0-8.2.el8_6.x86_64                         ubi-8-baseos    723.4 kB
+  replacing libdnf-0.63.0-8.1.el8_6.x86_64
+ pam-1.3.1-16.el8_6.1.x86_64                            ubi-8-baseos    757.5 kB
+  replacing pam-1.3.1-16.el8.x86_64
+ platform-python-3.6.8-47.el8_6.x86_64                  ubi-8-baseos     87.9 kB
+  replacing platform-python-3.6.8-45.el8.x86_64
+ python3-libs-3.6.8-47.el8_6.x86_64                     ubi-8-baseos      8.2 MB
+  replacing python3-libs-3.6.8-45.el8.x86_64
+ systemd-libs-239-58.el8_6.7.x86_64                     ubi-8-baseos      1.2 MB
+   replacing systemd-libs-239-58.el8_6.4.x86_64
+Transaction Summary:
+ Installing:        4 packages
+ Reinstalling:      0 packages
+ Upgrading:         7 packages
+ Obsoleting:        0 packages
+ Removing:          0 packages
+ Downgrading:       0 packages
+Downloading packages...
+Running transaction test...
+Updating: ca-certificates;2022.2.54-80.2.el8_6;noarch;ubi-8-baseos
+Updating: python3-libs;3.6.8-47.el8_6;x86_64;ubi-8-baseos
+Updating: platform-python;3.6.8-47.el8_6;x86_64;ubi-8-baseos
+Installing: platform-python-pip;9.0.3-22.el8;noarch;ubi-8-baseos
+Installing: libsecret;0.18.6-1.el8;x86_64;ubi-8-baseos
+Installing: pinentry;1.1.0-2.el8;x86_64;ubi-8-appstream
+Installing: gnupg2-smime;2.2.20-3.el8_6;x86_64;ubi-8-baseos
+Updating: gnupg2;2.2.20-3.el8_6;x86_64;ubi-8-baseos
+Updating: libdnf;0.63.0-8.2.el8_6;x86_64;ubi-8-baseos
+Updating: pam;1.3.1-16.el8_6.1;x86_64;ubi-8-baseos
+Updating: systemd-libs;239-58.el8_6.7;x86_64;ubi-8-baseos
+Cleanup: python3-libs;3.6.8-45.el8;x86_64;installed
+Cleanup: ca-certificates;2021.2.50-80.0.el8_4;noarch;installed
+Cleanup: platform-python;3.6.8-45.el8;x86_64;installed
+Cleanup: libdnf;0.63.0-8.1.el8_6;x86_64;installed
+Cleanup: pam;1.3.1-16.el8;x86_64;installed
+Cleanup: systemd-libs;239-58.el8_6.4;x86_64;installed
+Cleanup: gnupg2;2.2.20-2.el8;x86_64;installed
+Complete.
++ PACKAGES=
++ PIP_OPTS=
++ install_bindep
++ '[' -f bindep.txt ']'
++ bindep -l newline
++ sort
++ '[' rhel == centos ']'
+++ bindep -b compile
+++ true
++ compile_packages='openssl
+rsync'
++ '[' '!' -z 'openssl
+rsync' ']'
++ /usr/bin/microdnf install -y --nodocs --setopt install_weak_deps=0 openssl rsync
+Package                          Repository       Size
+Installing:
+ openssl-1:1.1.1k-7.el8_6.x86_64 ubi-8-baseos 726.4 kB
+ rsync-3.1.3-14.el8_6.3.x86_64   ubi-8-baseos 419.3 kB
+Transaction Summary:
+ Installing:        2 packages
+ Reinstalling:      0 packages
+ Upgrading:         0 packages
+ Obsoleting:        0 packages
+ Removing:          0 packages
+ Downgrading:       0 packages
+Downloading packages...
+Running transaction test...
+Installing: rsync;3.1.3-14.el8_6.3;x86_64;ubi-8-baseos
+Installing: openssl;1:1.1.1k-7.el8_6;x86_64;ubi-8-baseos
+Complete.
++ python3 -m venv /tmp/venv --system-site-packages --without-pip
++ source /tmp/venv/bin/activate
+++ deactivate nondestructive
+++ '[' -n '' ']'
+++ '[' -n '' ']'
+++ '[' -n /bin/bash -o -n '' ']'
+++ hash -r
+++ '[' -n '' ']'
+++ unset VIRTUAL_ENV
+++ '[' '!' nondestructive = nondestructive ']'
+++ VIRTUAL_ENV=/tmp/venv
+++ export VIRTUAL_ENV
+++ _OLD_VIRTUAL_PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+++ PATH=/tmp/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+++ export PATH
+++ '[' -n '' ']'
+++ '[' -z '' ']'
+++ _OLD_VIRTUAL_PS1=
+++ PS1='(venv) '
+++ export PS1
+++ '[' -n /bin/bash -o -n '' ']'
+++ hash -r
++ '[' -f /tmp/src/upper-constraints.txt ']'
++ [[ -n '' ]]
++ install_wheels
++ '[' -f /tmp/src/build-requirements.txt ']'
++ '[' -f setup.py ']'
++ '[' -f /tmp/src/requirements.txt ']'
++ '[' '!' -f /output/requirements.txt ']'
++ pip3 install --cache-dir=/output/wheels -r /tmp/src/requirements.txt
+WARNING: Running pip install with root privileges is generally not a good idea. Try `pip3 install --user` instead.
+Requirement already satisfied: cryptography in /usr/lib64/python3.9/site-packages (from -r /tmp/src/requirements.txt (line 1)) (3.3.1)
+Requirement already satisfied: six>=1.4.1 in /usr/lib/python3.9/site-packages (from cryptography->-r /tmp/src/requirements.txt (line 1)) (1.15.0)
+Requirement already satisfied: cffi>=1.12 in /usr/lib64/python3.9/site-packages (from cryptography->-r /tmp/src/requirements.txt (line 1)) (1.14.3)
+Requirement already satisfied: pycparser in /usr/lib/python3.9/site-packages (from cffi>=1.12->cryptography->-r /tmp/src/requirements.txt (line 1)) (2.20)
+Requirement already satisfied: ply==3.11 in /usr/lib/python3.9/site-packages (from pycparser->cffi>=1.12->cryptography->-r /tmp/src/requirements.txt (line 1)) (3.11)
++ cp /tmp/src/requirements.txt /output/requirements.txt
+++ ls -1 '/output/wheels/*whl'
+++ wc -l
++ '[' 0 -gt 0 ']'
+++ get-extras-packages
++ /usr/bin/microdnf clean all
+Complete.
++ rm -rf /var/cache/dnf /var/cache/yum
++ rm -rf /var/lib/dnf/history.sqlite /var/lib/dnf/history.sqlite-shm /var/lib/dnf/history.sqlite-wal
++ rm -rf '/var/log/dnf.*' /var/log/hawkey.log
++ rm -rf /tmp/venv
+--> 84da8e7ce92
+[3/3] STEP 1/5: FROM registry.redhat.io/ansible-automation-platform-22/ee-minimal-rhel8:latest
+[3/3] STEP 2/5: USER root
+--> e5ecba75adf
+[3/3] STEP 3/5: COPY --from=galaxy /usr/share/ansible /usr/share/ansible
+--> 92a32662b08
+[3/3] STEP 4/5: COPY --from=builder /output/ /output/
+--> ce93791245c
+[3/3] STEP 5/5: RUN /output/install-from-bindep && rm -rf /output/wheels
++ PKGMGR=
++ PKGMGR_OPTS='--nodocs --setopt=install_weak_deps=0 --setopt=rhel-8-for-x86_64-appstream-rpms.excludepkgs=ansible-core'
++ '[' -z ']'
++ PKGMGR=/usr/bin/dnf
++ '[' -f /usr/bin/microdnf ']'
++ PKGMGR=/usr/bin/microdnf
++ '[' -z --nodocs --setopt=install_weak_deps=0 --setopt=rhel-8-for-x86_64-appstream-rpms.excludepkgs=ansible-core ']'
+/output/install-from-bindep: line 28: [: too many arguments
++ /usr/bin/microdnf update -y --nodocs --setopt=install_weak_deps=0 --setopt=rhel-8-for-x86_64-appstream-rpms.excludepkgs=ansible-core
+Downloading metadata...
+Downloading metadata...
+Downloading metadata...
+Downloading metadata...
+Downloading metadata...
+Package                                                 Repository       Size
+Upgrading:
+ ca-certificates-2022.2.54-80.2.el8_6.noarch            ubi-8-baseos 942.8 kB
+  replacing ca-certificates-2021.2.50-80.0.el8_4.noarch
+ gnupg2-2.2.20-3.el8_6.x86_64                           ubi-8-baseos   2.5 MB
+  replacing gnupg2-2.2.20-2.el8.x86_64
+ libdnf-0.63.0-8.2.el8_6.x86_64                         ubi-8-baseos 723.4 kB
+  replacing libdnf-0.63.0-8.1.el8_6.x86_64
+ pam-1.3.1-16.el8_6.1.x86_64                            ubi-8-baseos 757.5 kB
+  replacing pam-1.3.1-16.el8.x86_64
+ systemd-libs-239-58.el8_6.7.x86_64                     ubi-8-baseos   1.2 MB
+   replacing systemd-libs-239-58.el8_6.4.x86_64
+Transaction Summary:
+ Installing:        0 packages
+ Reinstalling:      0 packages
+ Upgrading:         5 packages
+ Obsoleting:        0 packages
+ Removing:          0 packages
+ Downgrading:       0 packages
+Downloading packages...
+Running transaction test...
+Updating: libdnf;0.63.0-8.2.el8_6;x86_64;ubi-8-baseos
+Updating: pam;1.3.1-16.el8_6.1;x86_64;ubi-8-baseos
+Updating: systemd-libs;239-58.el8_6.7;x86_64;ubi-8-baseos
+Updating: ca-certificates;2022.2.54-80.2.el8_6;noarch;ubi-8-baseos
+Updating: gnupg2;2.2.20-3.el8_6;x86_64;ubi-8-baseos
+Cleanup: ca-certificates;2021.2.50-80.0.el8_4;noarch;installed
+Cleanup: libdnf;0.63.0-8.1.el8_6;x86_64;installed
+Cleanup: pam;1.3.1-16.el8;x86_64;installed
+Cleanup: systemd-libs;239-58.el8_6.4;x86_64;installed
+Cleanup: gnupg2;2.2.20-2.el8;x86_64;installed
+Complete.
++ '[' -f /output/bindep/run.txt ']'
+++ cat /output/bindep/run.txt
++ PACKAGES='openssl
+rsync'
++ '[' '!' -z 'openssl
+rsync' ']'
++ /usr/bin/microdnf install -y --nodocs --setopt=install_weak_deps=0 --setopt=rhel-8-for-x86_64-appstream-rpms.excludepkgs=ansible-core openssl rsync
+Package                          Repository       Size
+Installing:
+ openssl-1:1.1.1k-7.el8_6.x86_64 ubi-8-baseos 726.4 kB
+ rsync-3.1.3-14.el8_6.3.x86_64   ubi-8-baseos 419.3 kB
+Transaction Summary:
+ Installing:        2 packages
+ Reinstalling:      0 packages
+ Upgrading:         0 packages
+ Obsoleting:        0 packages
+ Removing:          0 packages
+ Downgrading:       0 packages
+Downloading packages...
+Running transaction test...
+Installing: rsync;3.1.3-14.el8_6.3;x86_64;ubi-8-baseos
+Installing: openssl;1:1.1.1k-7.el8_6;x86_64;ubi-8-baseos
+Complete.
++ '[' -f /output/bindep/epel.txt ']'
++ '[' -f /output/upper-constraints.txt ']'
++ '[' -f /output/requirements.txt ']'
++ pip3 install --cache-dir=/output/wheels -r /output/requirements.txt
+WARNING: Running pip install with root privileges is generally not a good idea. Try `pip3 install --user` instead.
+Requirement already satisfied: cryptography in /usr/lib64/python3.9/site-packages (from -r /output/requirements.txt (line 1)) (3.3.1)
+Requirement already satisfied: six>=1.4.1 in /usr/lib/python3.9/site-packages (from cryptography->-r /output/requirements.txt (line 1)) (1.15.0)
+Requirement already satisfied: cffi>=1.12 in /usr/lib64/python3.9/site-packages (from cryptography->-r /output/requirements.txt (line 1)) (1.14.3)
+Requirement already satisfied: pycparser in /usr/lib/python3.9/site-packages (from cffi>=1.12->cryptography->-r /output/requirements.txt (line 1)) (2.20)
+Requirement already satisfied: ply==3.11 in /usr/lib/python3.9/site-packages (from pycparser->cffi>=1.12->cryptography->-r /output/requirements.txt (line 1)) (3.11)
++ EXTRAS=
++ '[' -f /output/packages.txt ']'
+++ ls -1 '/output/wheels/*whl'
+++ wc -l
++ '[' 0 -gt 0 ']'
++ '[' '!' -z '' ']'
++ /usr/bin/microdnf clean all
+Complete.
++ rm -rf /var/cache/dnf /var/cache/yum
++ rm -rf /var/lib/dnf/history.sqlite /var/lib/dnf/history.sqlite-shm /var/lib/dnf/history.sqlite-wal
++ rm -rf '/var/log/dnf.*' /var/log/hawkey.log
+[3/3] COMMIT my_new_ee
+--> e3c21285a72
+Successfully tagged localhost/my_new_ee:latest
+e3c21285a723076d9e671e65c0f4753d5310498bb473f58fe15b82584c39ea80
+
+Complete! The build context can be found at: /home/nick/builder/new/context
+[nick@builder1 new]$
+----
+
+[source,shell]
+----
+[nick@builder1 new]$ rm ~/my_new_ee.tar
+[nick@builder1 new]$ podman save -o ~/my_new_ee.tar localhost/my_new_ee:latest
+Copying blob af51b1425726 done
+..
+----

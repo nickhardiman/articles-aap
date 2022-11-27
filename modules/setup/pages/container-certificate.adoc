@@ -1,0 +1,70 @@
+= server certificate in container
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 24-11-2022
+
+
+EE container missing cert
+
+Had some trouble with missing cert and missing redhat.foreman collection
+builder2
+/home/nick/ansible/plugin/
+
+trying
+https://role.rhu.redhat.com/rol-rhu/app/courses/do374-2.0/pages/ch05
+Using Inventory Plug-ins
+
+
+== problem - missing cert
+
+[source,shell]
+----
+ssh builder2
+cd /home/nick/ansible/plugin
+ansible-navigator  --inventory=./my.foreman.yml --mode stdout  run ping.yml
+----
+
+downloads
+registry.redhat.io/ansible-automation-platform-22/ee-supported-rhel8:latest
+
+fails with
+[source,shell]
+----
+[WARNING]:  * Failed to parse /home/nick/ansible/plugin/my.foreman.yml with
+auto plugin: HTTPSConnectionPool(host='satellite1.lab.example.com', port=443):
+Max retries exceeded with url: //api/v2/status?page=1&per_page=250 (Caused by
+SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED]
+certificate verify failed: self signed certificate in certificate chain
+(_ssl.c:1129)')))
+----
+
+== add cert
+
+Created a new container my_new_ee with cert but without plugins
+See /home/nick/ansible/builder/README
+uses
+registry.redhat.io/ansible-automation-platform-22/ee-minimal-rhel8:latest
+
+check
+[source,shell]
+----
+
+podman run -i -t --rm localhost/my_new_ee /bin/bash
+curl https://capsule1.lab.example.com/
+----
+
+== check 
+
+successful run with rebuilt my_new_ee
+
+[source,shell]
+----
+cd /home/nick/ansible/plugin
+ansible-navigator \
+  --inventory=./my.foreman.yml \
+  --pull-policy missing \
+  --mode stdout  \
+  --eei hub1.lab.example.com/my_new_ee \
+  run ping.yml
+----
+

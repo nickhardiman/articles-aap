@@ -1,0 +1,94 @@
+= collection in container
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 24-11-2022
+
+
+EE container missing redhat.foreman collection
+
+
+== problem - missing collection
+
+dont use this first time.
+  --pull-policy missing
+I need the latest my_new_ee container to be downloaded from hub.
+
+[source,shell]
+----
+cd /home/nick/ansible/plugin
+ansible-navigator  \
+  --inventory=./my.foreman.yml  \
+  --mode stdout  \
+  --eei hub1.lab.example.com/my_new_ee \
+  run ping.yml
+----
+
+== missing collection problem, try ansible-navigator doc
+
+try a similar thing with docs
+
+
+use ee-supported-rhel8:latest
+shows
+about 18 entries
+
+[source,shell]
+----
+ansible-navigator doc \
+  --type inventory  \
+  --pull-policy missing \
+  --mode stdout  \
+  --list
+----
+
+use my_new_ee:latest
+shows a different list
+about 24 entries
+
+[source,shell]
+----
+ansible-navigator doc \
+  --type inventory  \
+  --pull-policy missing \
+  --mode stdout  \
+  --eei hub1.lab.example.com/my_new_ee \
+  --list
+----
+
+redhat.satellite collection is not included in my ee container
+shows
+
+[source,shell]
+----
+[WARNING]: inventory redhat.satellite.foreman not found in:
+/home/runner/.ansible/plugins/inventory:/usr/share/ansible/plugins/inventory:/usr/lib/python3.9/site-
+packages/ansible/plugins/inventory
+----
+
+[source,shell]
+----
+ansible-navigator doc \
+  --type inventory  \
+  --pull-policy missing \
+  --mode stdout  \
+  --eei hub1.lab.example.com/my_new_ee \
+  redhat.satellite.foreman
+----
+
+
+== check 
+
+successful run with rebuilt my_new_ee
+
+[source,shell]
+----
+cd /home/nick/ansible/plugin
+ansible-navigator \
+  --inventory=./my.foreman.yml \
+  --pull-policy missing \
+  --mode stdout  \
+  --eei hub1.lab.example.com/my_new_ee \
+  run ping.yml
+----
+
+

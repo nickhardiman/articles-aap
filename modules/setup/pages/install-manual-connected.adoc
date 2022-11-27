@@ -5,6 +5,69 @@ Nick Hardiman
 
 A connected/online install on new virtual machines
 
+
+machines
+
+* an ansible controller on a VM named control1.lab.example.com and
+* a private automation hub on a VM named hub1.lab.example.com
+* an execution environment host on a VM named execution1.lab.example.com
+* a database serving host. This is a VM named database1.lab.example.com
+* an installer host. Install can be done from the VM control1.lab.example.com
+
+install from control1
+
+reference
+
+* RH install guide
+https://access.redhat.com/documentation/en-us/red_hat_ansible_automation_platform/2.2/html-single/red_hat_ansible_automation_platform_installation_guide/index
+* ansible admin guide
+https://docs.ansible.com/automation-controller/latest/html/administration/index.html get * a subscription manifest
+https://access.redhat.com/documentation/en-us/reference_architectures/2021/html-single/deploying_ansible_automation_platform_2.1/index#sub_manifest
+
+[source,shell]
+....
+# all
+# rpm: ansible-automation-platform-installer
+dnf install --enablerepo=ansible-automation-platform-2.2-for-rhel-9-x86_64-rpm ansible-automation-platform-installer
+# or
+subscription-manager repos --enable ansible-automation-platform-2.2-for-rhel-9-x86_64-rpms
+
+# builder2
+# download installer
+dnf install ansible-automation-platform-installer
+
+# control1
+# copy setup files to /opt/ansible-automation-platform/installer/
+# create root keys
+ssh-keygen
+# enable SSH to self
+cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys
+
+# hub1
+# execution1
+# enable root access from control1 to the other machines
+# copy control1:/root/.ssh/id_rsa.pub to .ssh/authorized keys
+# can't be done with ssh-copy-id root@hub1 because password login is not allowed.
+
+# control1
+# check access, auth, DNS
+ssh control1.lab.example.com
+ssh hub1.lab.example.com
+ssh execution1.lab.example.com
+cd /opt/ansible-automation-platform/installer/
+# copy inventory
+# change registry_username and registry_password in inventory
+# check registry account
+podman login registry.redhat.io
+# install
+./setup.sh
+
+# controller web UI
+# obtain and install the subscription manifest
+# https://access.redhat.com/documentation/en-us/reference_architectures/2021/html-single/deploying_ansible_automation_platform_2.1/index#sub_manifest
+....
+
+
 == install the AAP2 installer package
 
 If Internet access is made available, an installer RPM can be used instead of the setup bundle. 
@@ -16,3 +79,55 @@ The installer directory os /opt/ansible-automation-platform/installer/.
 This is owned by root with no permissions for others. 
 
 If the setup.sh script is run by the ansible user, group ownership of the installer directory and setup.log can be changed. 
+
+== remove 
+
+controller
+
+[source,shell]
+....
+dnf remove automation-controller automation-controller-server ansible-automation-platform-common
+....
+
+drop DB?
+
+== manifest
+
+manifest
+https://access.redhat.com/documentation/en-us/reference_architectures/2021/html-single/deploying_ansible_automation_platform_2.1/index#sub_manifest
+
+In order to successfully generate your subscription manifest:
+
+. Login to
+https://access.redhat.com/management/subscription_allocations
+. select the New Subscription Allocation button
+https://access.redhat.com/management/subscription_allocations/new
+. enter a Name
+. for Type select Subscription Asset Manager 1.4 from the dropdown box
+. click Create.
+. Once created, select the Subscriptions tab
+. select the Ansible Automation Platform subscription
+. select the number of entitlements you wish to provide.
+. Click on the Details tab
+. review the number of entitlements are correct
+. select the Export Manifest button.
+. Return to the Ansible Automation Platform dashboard,
+. import manifest.zip
+. click Next.
+. (Recommended) Enable user analytics and Insights for Ansible Automation Platform by providing your Red Hat or Red Hat Satellite credentials and click Next.
+Accept the end user license agreement.
+
+[cols="1,1"]  
+|===
+|Name           
+|aap2-emp-sku
+
+|Type           
+|SAM 1.4
+
+|Entitlements   
+|1
+
+|UUID           
+|1c888b2e-f848-4bef-bd18-d6465d1e6cc4
+|===
