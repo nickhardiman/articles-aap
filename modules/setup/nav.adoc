@@ -6,3 +6,4 @@
 ** xref:container-certificate.adoc[]
 ** xref:container-collection.adoc[]
 ** xref:ansible-builder.adoc[]
+** xref:collection-download.adoc[]
