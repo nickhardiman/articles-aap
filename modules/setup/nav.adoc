@@ -7,3 +7,4 @@
 ** xref:container-collection.adoc[]
 ** xref:ansible-builder.adoc[]
 ** xref:collection-download.adoc[]
+** xref:upgrade.adoc[]

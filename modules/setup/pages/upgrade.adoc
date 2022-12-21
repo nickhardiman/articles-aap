@@ -1,0 +1,22 @@
+= upgrade
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 21-12-2022
+
+
+https://docs.ansible.com/automation-controller/latest/html/upgrade-migration-guide/upgrade_considerations.html
+
+"""
+All upgrades should be no more than two major versions behind what you are currently upgrading to. For example, in order to upgrade to automation controller 4.0, you must first be on version 3.8.x; i.e., there is no direct upgrade path from version 3.7.x or earlier. Refer to the recommended upgrade path article on the Red Hat customer portal.
+
+In order to run automation controller 4.0, you must also have Ansible 2.10.
+"""
+
+Also, from https://access.redhat.com/articles/4098921 :
+
+"""
+Multi-version Upgrade
+Ansible Automation Platform (AAP) supports direct upgrades between major versions. For example, you can upgrade successfully from AAP 1.2 directly to AAP 2.1 or a newer release without upgrading in between. The installation will attempt to upgrade all in-use platform components (Automation Controller/Automation Hub/Automation Services Catalog).
+Example: AAP Installation is on 1.2.x and needs to be upgrade to latest 2.2.x.
+Upgrade Path: AAP can be upgraded from 1.2.x directly to 2.2.x.
+"""
