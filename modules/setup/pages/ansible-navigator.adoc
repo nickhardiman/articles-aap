@@ -12,10 +12,14 @@ https://ansible-navigator.readthedocs.io/en/latest/faq/#placement-of-ansible-col
 
 == commands
 
+config 
+
 [source,shell]
 ....
 ansible-navigator config --eei hub1.lab.example.com/ee-supported-rhel8 -m stdout dump
 ....
+
+settings option was not available in v1.1.0
 
 [source,shell]
 ....
@@ -24,11 +28,13 @@ ansible-navigator settings --eei hub1.lab.example.com/ee-supported-rhel8 \
 vim ansible-navigator-settings
 ....
 
+doc
+
 [source,shell]
 ....
 ansible-navigator doc --mode stdout --type inventory redhat.satellite.foreman
-mv ansible-navigator ansible-navigator.yml
 ....
+
 
 [source,shell]
 ....
@@ -113,7 +119,7 @@ podman run --rm --tty --interactive \
 
 === bash environment variables ANSIBLE_REMOTE_USER and ANSIBLE_PRIVATE_KEY_FILE
 
-no point setting ANSIBLE_PRIVATE_KEY_FILE becaaose
+no point setting ANSIBLE_PRIVATE_KEY_FILE because
 
 If no config files exist
 

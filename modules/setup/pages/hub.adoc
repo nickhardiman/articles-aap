@@ -1,0 +1,11 @@
+= private automation hub
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 03-03-2023
+
+
+.pulpcore-manager
+[source,shell]
+....
+sudo PULP_SETTINGS=/etc/pulp/settings.py /usr/bin/pulpcore-manager 
+....

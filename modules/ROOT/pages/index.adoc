@@ -58,3 +58,11 @@ deprovision/decommission/end of life
 
 * data store
 
+manage 
+
+* asset
+* release
+* patch
+* vulnerability
+* configuration
+* change
