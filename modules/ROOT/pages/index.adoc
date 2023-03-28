@@ -66,3 +66,21 @@ manage
 * vulnerability
 * configuration
 * change
+
+== vendors and products
+
+https://reprints2.forrester.com/#/assets/2/431/RES178460/report
+
+alphabetical by vendor 
+
+. https://amelia.ai/orchestration/[Amelia Orchestration Services]
+. https://www.bmc.com/it-solutions/truesight-orchestration.html[BMC Software Truesight Orchestration]
+. https://canonical.com/#products[Canonical MAAS, Juju]
+. https://help.hcltechsw.com/bigfix/10.0/lifecycle/index.html[HCLSoftware BigFix 10]
+. https://www.microfocus.com/en-us/products/data-center-automation/overview[Micro Focus Data Center Automation]
+. https://learn.microsoft.com/en-us/azure/automation/overview[Microsoft Azure]
+. https://www.chef.io/[Progress Chef]
+. https://www.puppet.com/products/puppet-enterprise[Puppet Enterprise]
+. https://www.redhat.com/en/technologies/management/ansible[Red Hat Ansible Automation Platform]
+. https://resolve.io/it-automation-platform[Resolve Systems Actions]
+. https://www.vmware.com/products/aria-automation.html[VMware Aria]
