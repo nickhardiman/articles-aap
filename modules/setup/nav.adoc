@@ -1,7 +1,4 @@
 * xref:index.adoc[]
-** xref:install-manual-disconnected.adoc[]
-** xref:install-manual-connected.adoc[]
-** xref:install-auto-connected.adoc[]
 ** xref:ansible-navigator.adoc[]
 ** xref:container-certificate.adoc[]
 ** xref:container-collection.adoc[]
