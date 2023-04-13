@@ -1,0 +1,7 @@
+= awx
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 13-04-2023
+
+https://access.redhat.com/solutions/4971631
+How can I install and configure awx-cli?

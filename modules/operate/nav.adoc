@@ -1,2 +1,6 @@
 * xref:index.adoc[]
+** xref:ansible-navigator.adoc[]
+** xref:ansible-builder.adoc[]
+** xref:collection-download.adoc[]
+** xref:awx.adoc[]
 

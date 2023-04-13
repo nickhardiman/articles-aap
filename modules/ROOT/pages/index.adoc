@@ -67,7 +67,8 @@ manage
 * configuration
 * change
 
-== vendors and products
+
+== infrastructure automation vendors and products
 
 https://reprints2.forrester.com/#/assets/2/431/RES178460/report
 

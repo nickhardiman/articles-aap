@@ -1,8 +1,5 @@
 * xref:index.adoc[]
-** xref:ansible-navigator.adoc[]
 ** xref:container-certificate.adoc[]
 ** xref:container-collection.adoc[]
-** xref:ansible-builder.adoc[]
-** xref:collection-download.adoc[]
 ** xref:upgrade.adoc[]
 ** xref:hub.adoc[]
