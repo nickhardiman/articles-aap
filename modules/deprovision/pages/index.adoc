@@ -1,0 +1,6 @@
+= deprovision
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 24-11-2022
+
+I'm in the process of experimenting.
