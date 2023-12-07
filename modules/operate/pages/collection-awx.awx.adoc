@@ -1,0 +1,107 @@
+= awx.awx (ansible.controller)
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 13-04-2023
+
+
+The open source collection is awx.awx. 
+The downstream version supported by Red Hat is ansible.controller.
+
+
+== awxkit
+
+Collection makes use of the Python library awxkit. 
+Module ansible.controller.export in this blog requires awxkit. 
+https://www.ansible.com/blog/automation-controller-workflow-deployment-as-code
+
+
+
+== install ansible.controller 
+
+https://www.ansible.com/blog/automation-controller-workflow-deployment-as-code
+
+[source,shell]
+----
+vim   /home/nick/ansible/playbook/ansible.cfg 
+----
+
+[source,ini]
+----
+# https://docs.ansible.com/ansible/latest/reference_appendices/config.html
+[defaults]
+inventory=./inventory.ini
+remote_user = ansible_user
+private_key_file = ~/.ssh/ansible-key.priv
+host_key_checking = False
+#roles_path = ~/ansible/roles:/usr/share/ansible/roles:/etc/ansible/roles
+#collections_paths = ~/.ansible/collections:/usr/share/ansible/collections:~/ansible/collections
+nocows=1
+# https://docs.ansible.com/ansible/latest/collections/ansible/posix/profile_tasks_callback.html
+callbacks_enabled=ansible.posix.profile_tasks
+
+[galaxy]
+server_list = automation_hub, galaxy
+
+[galaxy_server.automation_hub]
+url=https://console.redhat.com/api/automation-hub/
+auth_url=https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token
+token=abcd...1234
+
+[galaxy_server.galaxy]
+url=https://galaxy.ansible.com/
+----
+
+[source,shell]
+----
+ansible-galaxy collection install ansible.posix
+ansible-galaxy collection install ansible.controller
+----
+
+
+
+== use 
+
+[source,shell]
+----
+cd /home/nick/ansible/playbook/
+vim export.yml
+----
+
+[source,yaml]
+----
+---
+# https://www.ansible.com/blog/automation-controller-workflow-deployment-as-code
+# https://docs.ansible.com/ansible/latest/collections/awx/awx/export_module.html
+#
+# prereqs
+# pip3 install awxkit
+# ansible-galaxy collection install ansible.controller
+
+- name: Export Workflow
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  collections:
+    - ansible.controller
+
+  tasks:
+    - name: Export job templates
+      ansible.controller.export:
+        controller_host: https://aapcontrol.build.example.com
+        controller_username: admin
+        controller_password: 'Password;1'
+        validate_certs: false
+        job_templates: 
+          - "Demo Job Template"
+        #all: true
+      register: r_export
+
+    - debug:
+        var: r_export
+
+    - name: Export workflow job template to file
+      copy:
+        content: "{{ r_export | to_nice_yaml( width=50, explicit_start=True, explicit_end=True) }}"
+        dest: workflow.yaml
+...
+----

@@ -1,0 +1,100 @@
+= awx CLI and awxkit 
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 13-04-2023
+
+
+I installed awx and awxkit in a python venv ~/venv-ansible/ on dev.build.example.com.
+
+I installed awx and awxkit as root in /usr/local/lib/python3.9/site-packages/awxkit/ on  aapcontrol.build.example.com.
+
+ansible.controller.export in this blog requires awxkit. 
+https://www.ansible.com/blog/automation-controller-workflow-deployment-as-code
+
+
+== AWX Command Line Interface
+
+awx command is installed along with the awxkit library, from the awxkit python package. 
+
+https://github.com/ansible/awx/blob/devel/INSTALL.md#installing-the-awx-cli
+
+old
+https://docs.ansible.com/ansible-tower/latest/html/towercli/index.html
+
+older
+https://github.com/ansible/tower-cli
+
+
+== awxkit library
+
+tons of files in 
+/home/nick/venv-ansible/lib/python3.9/site-packages/awxkit/
+
+
+== awx-cli 
+
+https://access.redhat.com/solutions/4971631
+How can I install and configure awx-cli?
+
+
+== create an ansible virtual env 
+
+* only available as a python package https://pypi.org/project/awxkit/
+* not included with ansible.controller 
+* not available in an RPM
+
+There is a file in the ansible.controller collection which uses awxkit and has the same name. 
+
+[source,shell]
+----
+/home/nick/.ansible/collections/ansible_collections/ansible/controller/plugins/module_utils/awxkit.py
+----
+
+[source,shell]
+----
+python3 -m venv venv-ansible
+ansible --version
+source venv-ansible/bin/activate
+pip3 install --upgrade pip wheel 
+pip3 install ansible-core==2.15
+pip3 install ansible-lint
+source ~/lab-build-proxy.sh 
+source venv-ansible/bin/activate
+pip3 --version
+dnf install pip3
+----
+
+== install awxkit in a venv
+
+
+[source,shell]
+----
+[root@aapcontrol playbook]# pip3 install awxkit
+Collecting awxkit
+  Downloading awxkit-23.5.0-py3-none-any.whl (123 kB)
+     |████████████████████████████████| 123 kB 4.8 MB/s 
+Requirement already satisfied: PyYAML in /usr/lib64/python3.9/site-packages (from awxkit) (5.4.1)
+Requirement already satisfied: requests in /usr/lib/python3.9/site-packages (from awxkit) (2.31.0)
+Requirement already satisfied: charset_normalizer<4,>=2 in /usr/lib/python3.9/site-packages (from requests->awxkit) (2.0.11)
+Requirement already satisfied: idna<4,>=2.5 in /usr/lib/python3.9/site-packages (from requests->awxkit) (3.3)
+Requirement already satisfied: urllib3<3,>=1.21.1 in /usr/lib/python3.9/site-packages (from requests->awxkit) (1.26.8)
+Requirement already satisfied: certifi>=2017.4.17 in /usr/lib/python3.9/site-packages (from requests->awxkit) (2022.12.7)
+Installing collected packages: awxkit
+  WARNING: The scripts akit and awx are installed in '/usr/local/bin' which is not on PATH.
+  Consider adding this directory to PATH or, if you prefer to suppress this warning, use --no-warn-script-location.
+Successfully installed awxkit-23.5.0
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+[root@aapcontrol playbook]# 
+----
+
+
+[source,shell]
+----
+(venv-ansible) [nick@dev playbook]$ awx --help
+usage: awx [--help] [--version] [--conf.host https://example.awx.org] [--conf.token TEXT] [--conf.username TEXT]
+...
+  -v, --verbose         print debug-level logs, including requests made
+(venv-ansible) [nick@dev playbook]$ 
+----
+
+
