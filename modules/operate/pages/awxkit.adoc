@@ -4,12 +4,33 @@ Nick Hardiman
 :revdate: 13-04-2023
 
 
+== awxkit Python library 
+
+The awxkit Python library provides functions that are used by the _awx_ CLI tool and the Ansible awx.awx collection.
+
+The _awx_ command is installed along with the awxkit library. 
+
+Ansible collection ansible.controller makes use of the Python library awxkit. 
+Module ansible.controller.export in this blog requires awxkit. 
+https://www.ansible.com/blog/automation-controller-workflow-deployment-as-code
+
+
+== where to get awxkit
+
+* only available as a python package https://pypi.org/project/awxkit/
+* not included with ansible.controller 
+* not available in an RPM
+
+There is a file in the ansible.controller collection which uses awxkit and has the same name. 
+
+[source,shell]
+----
+/home/nick/.ansible/collections/ansible_collections/ansible/controller/plugins/module_utils/awxkit.py
+----
+
 I installed awx and awxkit in a python venv ~/venv-ansible/ on dev.build.example.com.
 
 I installed awx and awxkit as root in /usr/local/lib/python3.9/site-packages/awxkit/ on  aapcontrol.build.example.com.
-
-ansible.controller.export in this blog requires awxkit. 
-https://www.ansible.com/blog/automation-controller-workflow-deployment-as-code
 
 
 == AWX Command Line Interface
@@ -39,16 +60,6 @@ How can I install and configure awx-cli?
 
 == create an ansible virtual env 
 
-* only available as a python package https://pypi.org/project/awxkit/
-* not included with ansible.controller 
-* not available in an RPM
-
-There is a file in the ansible.controller collection which uses awxkit and has the same name. 
-
-[source,shell]
-----
-/home/nick/.ansible/collections/ansible_collections/ansible/controller/plugins/module_utils/awxkit.py
-----
 
 [source,shell]
 ----
@@ -64,8 +75,8 @@ pip3 --version
 dnf install pip3
 ----
 
-== install awxkit in a venv
 
+== install awxkit in a venv
 
 [source,shell]
 ----

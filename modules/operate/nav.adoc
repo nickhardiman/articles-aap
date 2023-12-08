@@ -4,4 +4,4 @@
 ** xref:collection-download.adoc[]
 ** xref:awxkit.adoc[]
 ** xref:collection-awx.awx.adoc[]
-
+** xref:pre-commit.adoc[]
