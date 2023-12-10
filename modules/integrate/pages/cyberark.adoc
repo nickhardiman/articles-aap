@@ -1,0 +1,710 @@
+= CyberArk Conjur get-started with RHEL 9 and podman commands
+Nick Hardiman <nhardima@redhat.com>
+:source-highlighter: highlight.js
+:revdate: 10-12-2023
+
+
+* EPV (Enterprise Password Vault)
+* AAM (Application Access Manager)
+* AAM Central Credential Provider
+
+
+https://github.com/cyberark/ansible-security-automation-collection/blob/master/docs/cyberark_credential.md
+
+
+
+I followed this quick-start guide. 
+https://www.conjur.org/get-started/
+I converted it to install and run on RHEL 9.
+My guide does not use a Python virtual environment, or docker-compose.
+
+My guide uses podman commands.  
+Commands run one container (openssl) briefly, to generate a server cert for nginx. 
+Commands run six containers permanently.
+
+.containers
+----
+#  container name               network alias
+1  openssl                      openssl
+2  bot_app                      bot_app
+3  postgres_database            database
+4  conjur-quickstart_pgadmin_1  pgadmin
+5  conjur_server                conjur
+6  nginx_proxy                  proxy
+7  conjur_client                client
+----
+
+I couldn't get inter-pod networking running so 
+all containers are in a pod "rootlessconjur".
+All containers are rootless. 
+
+.published ports
+----
+host container    service
+8081 80           PGadmin
+8432 5432         Postgresql
+8080 80           Conjur server
+8443 443          nginx proxy
+----
+
+
+
+== RHEL 9 prereqs
+
+SSH from workstation to conjur host.
+
+Add an SSH tunnel to use PGadmin.
+
+Install podman. 
+
+Clone Cypberark's quickstart repo. 
+
+[source,shell]
+----
+ssh -L 8081:localhost:8081 nick@secret.source.example.com
+sudo dnf group install "Container Management"
+mkdir /home/nick/github/
+cd /home/nick/github/
+git clone https://github.com/cyberark/conjur-quickstart.git
+cd conjur-quickstart/
+----
+
+== 1. SETUP A CONJUR OSS ENVIRONMENT
+
+https://www.conjur.org/get-started/quick-start/oss-environment/
+
+
+=== Step 1: Pull the Docker image
+
+https://www.conjur.org/get-started/quick-start/oss-environment/#step-1
+
+[source,shell]
+----
+source ~/lab-source-proxy.sh 
+podman pull docker.io/dpage/pgadmin4
+podman pull docker.io/postgres:10.16
+podman pull docker.io/nginx:1.13.6-alpine
+podman pull docker.io/cfmanteiga/alpine-bash-curl-jq
+podman pull docker.io/cyberark/conjur-cli:8
+podman pull docker.io/cyberark/conjur
+----
+
+
+=== Step 2: Generate the master key
+
+Untested! 
+I  did this during step 5 generate CONJUR_DATA_KEY
+
+[source,shell]
+----
+cd /home/nick/github/conjur-quickstart
+podman run  --rm conjur data-key generate > ./data_key
+----
+
+
+=== Step 3: Load master key as an environment variable
+
+https://www.conjur.org/get-started/quick-start/oss-environment/#step-3
+
+[source,shell]
+----
+cd /home/nick/github/conjur-quickstart
+export CONJUR_DATA_KEY="$(< ./data_key)"
+----
+
+
+=== Step 4: Start the Conjur OSS environment
+
+https://www.conjur.org/get-started/quick-start/oss-environment/#step-4
+
+changes - 
+move them all to the same pod. 
+start containers individually 
+add :z to volumes
+add long option names and quotes 
+
+Create a new empty pod. 
+[source,shell]
+----
+podman pod create rootlessconjur
+----
+
+Add these containers to pod rootlessconjur
+----
+1 openssl
+2 bot_app
+3 postgres_database
+4 conjur-quickstart_pgadmin_1
+5 conjur_server
+6 nginx_proxy
+7 conjur_client
+----
+
+
+==== 1 openssl
+
+runs openssl, 
+reads /home/nick/github/conjur-quickstart/conf/tls/tls.conf (https://github.com/cyberark/conjur-quickstart/blob/main/conf/tls/tls.conf), 
+openssl req -newkey rsa:2048 -days 365 -nodes -x509 -config /tmp/conf/tls.conf -extensions v3_ca -keyout /tmp/conf/nginx.key -out /tmp/conf/nginx.crt
+writes nginx.key and nginx.crt 
+exits
+cert is used by nginx_proxy
+
+SELinux can stop writing to a host volume. 
+mounted volume must be relabelled as 
+container_file_t
+
+--entrypoint without enclosing quotes (--entrypoint ["..."] not --entrypoint='["..."]') causes 
+Error: invalid reference format
+
+[source,shell]
+----
+podman run \
+  --name=openssl \
+  --pod=rootlessconjur \
+  --detach \
+  --rm \
+  --label="io.podman.compose.config-hash=2e054526bd33a469189eed1d74c5337061a1b15dafc90f4668234b01aa9a9054" \
+  --label="io.podman.compose.project=conjur-quickstart" \
+  --label="io.podman.compose.version=1.0.6" \
+  --label="PODMAN_SYSTEMD_UNIT=podman-compose@conjur-quickstart.service" \
+  --label="com.docker.compose.project=conjur-quickstart" \
+  --label="com.docker.compose.project.working_dir=/home/nick/github/conjur-quickstart" \
+  --label="com.docker.compose.project.config_files=docker-compose.yml" \
+  --label="com.docker.compose.container-number=1" \
+  --label="com.docker.compose.service=openssl" \
+  --volume="/home/nick/github/conjur-quickstart/conf/tls:/tmp/conf:z" \
+  --net=conjur-quickstart_default \
+  --network-alias=openssl \
+  --entrypoint='["openssl", "req", "-newkey", "rsa:2048", "-days", "365", "-nodes", "-x509", "-config", "/tmp/conf/tls.conf", "-extensions", "v3_ca", "-keyout", "/tmp/conf/nginx.key", "-out", "/tmp/conf/nginx.crt"]' \
+  cyberark/conjur
+----
+
+==== 2 bot_app
+
+example application used in https://www.conjur.org/get-started/
+tail -F anything 
+process never stops, waits indefinitely, does not exit. 
+
+[source,shell]
+----
+podman run \
+  --name=bot_app \
+  --pod=rootlessconjur \
+  --detach \
+  --label="io.podman.compose.config-hash=2e054526bd33a469189eed1d74c5337061a1b15dafc90f4668234b01aa9a9054" \
+  --label="io.podman.compose.project=conjur-quickstart" \
+  --label="io.podman.compose.version=1.0.6" \
+  --label="PODMAN_SYSTEMD_UNIT=podman-compose@conjur-quickstart.service" \
+  --label="com.docker.compose.project=conjur-quickstart" \
+  --label="com.docker.compose.project.working_dir=/home/nick/github/conjur-quickstart" \
+  --label="com.docker.compose.project.config_files=docker-compose.yml" \
+  --label="com.docker.compose.container-number=1" \
+  --label="com.docker.compose.service=bot_app" \
+  --volume="/home/nick/github/conjur-quickstart/program.sh:/tmp/program.sh:ro,z" \
+  --net conjur-quickstart_default \
+  --network-alias bot_app \
+  --privileged \
+  --restart on-failure \
+  cfmanteiga/alpine-bash-curl-jq \
+  tail -F anything
+----
+
+==== 3 postgres_database
+
+postgresql connection URI
+
+format: 
+postgresql://[user[:password]@][netloc][:port][/dbname]
+
+[source,shell]
+----
+postgres://postgres:SuperSecretPg@database/postgres
+----
+
+from host
+
+[source,shell]
+----
+psql -h localhost -p 8432 -U postgres postgres
+SuperSecretPg
+----
+
+[source,shell]
+----
+podman run \
+  --name=postgres_database \
+  --pod=rootlessconjur \
+  --detach \
+  --label="io.podman.compose.config-hash=2e054526bd33a469189eed1d74c5337061a1b15dafc90f4668234b01aa9a9054" \
+  --label="io.podman.compose.project=conjur-quickstart" \
+  --label="io.podman.compose.version=1.0.6" \
+  --label="PODMAN_SYSTEMD_UNIT=podman-compose@conjur-quickstart.service" \
+  --label="com.docker.compose.project=conjur-quickstart" \
+  --label="com.docker.compose.project.working_dir=/home/nick/github/conjur-quickstart" \
+  --label="com.docker.compose.project.config_files=docker-compose.yml" \
+  --label="com.docker.compose.container-number=1" \
+  --label="com.docker.compose.service=database" \
+  --env="POSTGRES_HOST_AUTH_METHOD=password" \
+  --env="POSTGRES_PASSWORD=SuperSecretPg" \
+  --net conjur-quickstart_default \
+  --network-alias database \
+  --publish 8432:5432 \
+  postgres:10.16
+----
+
+==== 4 conjur-quickstart_pgadmin_1
+
+web front end to postgres 
+https://www.pgadmin.org/
+why?
+port forward
+nickhardiman@nhardima-mac ~ % ssh -L 8081:localhost:8081 nick@secret.source.example.com
+login
+http://127.0.0.1:8081/browser/
+user@domain.com 
+SuperSecret
+add new server
+general
+name:     conjurdb
+connection
+host:     database
+port:     5432
+maintenance database: postgres
+user:     postgres
+password: SuperSecretPg
+
+[source,shell]
+----
+podman run \
+  --name=conjur-quickstart_pgadmin_1 \
+  --pod=rootlessconjur \
+  --detach \
+  --label="io.podman.compose.config-hash=2e054526bd33a469189eed1d74c5337061a1b15dafc90f4668234b01aa9a9054" \
+  --label="io.podman.compose.project=conjur-quickstart" \
+  --label="io.podman.compose.version=1.0.6" \
+  --label="PODMAN_SYSTEMD_UNIT=podman-compose@conjur-quickstart.service" \
+  --label="com.docker.compose.project=conjur-quickstart" \
+  --label="com.docker.compose.project.working_dir=/home/nick/github/conjur-quickstart" \
+  --label="com.docker.compose.project.config_files=docker-compose.yml" \
+  --label="com.docker.compose.container-number=1" \
+  --label="com.docker.compose.service=pgadmin" \
+  --env="PGADMIN_DEFAULT_EMAIL=user@domain.com" \
+  --env="PGADMIN_DEFAULT_PASSWORD=SuperSecret" \
+  --net conjur-quickstart_default \
+  --network-alias pgadmin \
+  --publish 8081:80 \
+  dpage/pgadmin4
+----
+
+
+==== 5 conjur_server
+
+cyberark conjur server
+PostgreSQL connection string format
+postgresql://[user[:password]@][netloc][:port][/dbname]
+postgres://postgres:SuperSecretPg@database/postgres
+
+# watch logs for errors 
+
+[source,shell]
+----
+# new terminal
+sudo -i
+cd /var/log/
+tail -f audit/audit.log messages
+----
+
+good 
+
+/var/log/messages contains
+[source,shell]
+----
+Nov 27 21:43:48 secret conjur_server[28779]: => Booting Puma
+Nov 27 21:43:48 secret conjur_server[28779]: => Rails 6.1.7.4 application starting in production 
+Nov 27 21:43:48 secret conjur_server[28779]: => Run `bin/rails server --help` for more startup options
+...
+----
+
+bad 
+
+* SElinux
+* die and restart after failing to contact database
+
+
+[source,shell]
+----
+podman run \
+  --name=conjur_server \
+  --pod=rootlessconjur \
+  --detach \
+  --requires=postgres_database \
+  --label="io.podman.compose.config-hash=2e054526bd33a469189eed1d74c5337061a1b15dafc90f4668234b01aa9a9054" \
+  --label="io.podman.compose.project=conjur-quickstart" \
+  --label="io.podman.compose.version=1.0.6" \
+  --label="PODMAN_SYSTEMD_UNIT=podman-compose@conjur-quickstart.service" \
+  --label="com.docker.compose.project=conjur-quickstart" \
+  --label="com.docker.compose.project.working_dir=/home/nick/github/conjur-quickstart" \
+  --label="com.docker.compose.project.config_files=docker-compose.yml" \
+  --label="com.docker.compose.container-number=1" \
+  --label="com.docker.compose.service=conjur" \
+  --env="DATABASE_URL=postgres://postgres:SuperSecretPg@database/postgres" \
+  --env="CONJUR_DATA_KEY" \
+  --env="CONJUR_AUTHENTICATORS" \
+  --net conjur-quickstart_default \
+  --network-alias conjur \
+  --publish 8080:80 \
+  --restart on-failure \
+  cyberark/conjur \
+  server
+----
+
+
+==== 6 nginx_proxy
+
+nginx proxy
+
+nginx config is 
+  https://github.com/cyberark/conjur-quickstart/blob/main/conf/default.conf
+  /home/nick/github/conjur-quickstart/conf/default.conf
+
+cert is created by openssl
+
+[source,shell]
+----
+podman run \
+  --name=nginx_proxy \
+  --pod=rootlessconjur \
+  --detach \
+  --requires=postgres_database,conjur_server \
+  --label="io.podman.compose.config-hash=2e054526bd33a469189eed1d74c5337061a1b15dafc90f4668234b01aa9a9054" \
+  --label="io.podman.compose.project=conjur-quickstart" \
+  --label="io.podman.compose.version=1.0.6" \
+  --label="PODMAN_SYSTEMD_UNIT=podman-compose@conjur-quickstart.service" \
+  --label="com.docker.compose.project=conjur-quickstart" \
+  --label="com.docker.compose.project.working_dir=/home/nick/github/conjur-quickstart" \
+  --label="com.docker.compose.project.config_files=docker-compose.yml" \
+  --label="com.docker.compose.container-number=1" \
+  --label="com.docker.compose.service=proxy" \
+  --volume="/home/nick/github/conjur-quickstart/conf:/etc/nginx/conf.d/:ro,z" \
+  --volume="/home/nick/github/conjur-quickstart/conf/tls:/etc/nginx/tls/:ro,z" \
+  --net conjur-quickstart_default \
+  --network-alias proxy \
+  --publish 8443:443 \
+  --restart on-failure \
+  nginx:1.13.6-alpine
+----
+
+
+==== 7 conjur_client
+
+cyberark conjur client
+sleep infinity
+process never stops, waits indefinitely, does not exit. 
+
+[source,shell]
+----
+podman run \
+  --name=conjur_client \
+  --pod=rootlessconjur \
+  --detach \
+  --requires=nginx_proxy,conjur_server,postgres_database \
+  --label="io.podman.compose.config-hash=2e054526bd33a469189eed1d74c5337061a1b15dafc90f4668234b01aa9a9054" \
+  --label="io.podman.compose.project=conjur-quickstart" \
+  --label="io.podman.compose.version=1.0.6" \
+  --label="PODMAN_SYSTEMD_UNIT=podman-compose@conjur-quickstart.service" \
+  --label="com.docker.compose.project=conjur-quickstart" \
+  --label="com.docker.compose.project.working_dir=/home/nick/github/conjur-quickstart" \
+  --label="com.docker.compose.project.config_files=docker-compose.yml" \
+  --label="com.docker.compose.container-number=1" \
+  --label="com.docker.compose.service=client" \
+  --volume="/home/nick/github/conjur-quickstart/conf/policy:/policy:z" \
+  --net conjur-quickstart_default \
+  --network-alias client \
+  --entrypoint='["sleep"]' \
+  cyberark/conjur-cli:8 \
+  infinity
+----
+
+==== check pod and containers
+
+[source,shell]
+----
+[nick@secret conjur-quickstart]$ podman pod list
+POD ID        NAME            STATUS      CREATED         INFRA ID      # OF CONTAINERS
+4fa7aca8bd9c  rootlessconjur  Degraded    54 minutes ago  728ec3271374  8
+[nick@secret conjur-quickstart]$ 
+[nick@secret conjur-quickstart]$ podman pod inspect rootlessconjur
+{
+     "Id": "4fa7aca8bd9cde4ade2cf77571c7f5423c4cc37997502059a2ea91f5ae29dce2",
+     "Name": "rootlessconjur",
+...
+}
+[nick@secret conjur-quickstart]$ 
+[nick@secret conjur-quickstart]$ podman pod top rootlessconjur
+USER        PID         PPID        %CPU        ELAPSED           TTY         TIME        COMMAND
+pgadmin     1           0           0.000       44m2.279173462s   ?           0s          /venv/bin/python3 /venv/bin/gunicorn --limit-request-line 8190 --timeout 86400 --bind [::]:80 -w 1 --threads 25 --access-logfile - -c gunicorn_config.py run_pgadmin:app 
+...
+postgres    95          1           0.000       26m36.282400047s  ?           0s          postgres: postgres postgres 10.89.0.6(47566) idle 
+root        1           0           0.000       52m5.283090841s   ?           0s          tail -F anything 
+[nick@secret conjur-quickstart]$ 
+----
+
+=== Step 5: Create admin account
+
+[source,shell]
+----
+podman exec \
+  --interactive \
+  --tty \
+  --env DATABASE_URL=postgres://postgres:SuperSecretPg@database/postgres \
+  --env CONJUR_DATA_KEY \
+  --env CONJUR_AUTHENTICATORS \
+  conjur_server \
+  conjurctl account create myConjurAccount \
+> admin_data
+----
+
+
+=== Step 6: Connect the Conjur client to the Conjur server
+
+
+[source,shell]
+----
+podman exec \
+  --interactive \
+  --tty \
+  conjur_client \
+  conjur init -u https://proxy -a myConjurAccount --self-signed
+----
+
+problem - used https://proxy 
+host name did not match certificate name. 
+
+[source,shell]
+----
+/ # conjur -d  login -i admin
+? Please enter your password (it will not be echoed): ********************************************************
+GET /authn/myCA2/login HTTP/1.1
+Host: nginx_proxy
+User-Agent: Go-http-client/1.1
+Content-Length: 10
+Authorization: [REDACTED]
+Content-Type: text/plain
+Accept-Encoding: gzip
+
+[REDACTED]
+
+x509: certificate is valid for localhost, proxy, not nginx_proxy
+----
+
+
+
+== 2. DEFINE POLICY
+
+https://www.conjur.org/get-started/quick-start/define-policy/
+
+
+=== Step 1: Log in to Conjur as admin
+
+cat admin_data 
+
+[source,shell]
+----
+podman exec \
+  --interactive \
+  --tty \
+  conjur_client \
+  conjur login -i admin
+----
+
+[source,shell]
+----
+[nick@secret conjur-quickstart]$ podman exec   --interactive   --tty   conjur_client   conjur login -i admin
+? Please enter your password (it will not be echoed): **************************************************
+Logged in
+[nick@secret conjur-quickstart]$ 
+----
+
+
+=== Step 2: Load the sample policy
+
+policy directory is already mounted on client. 
+See this option above. 
+  --volume="/home/nick/github/conjur-quickstart/conf/policy:/policy:z"
+
+[source,shell]
+----
+podman exec \
+  --interactive \
+  --tty \
+  conjur_client \
+  conjur policy load -b root -f policy/BotApp.yml > my_app_data
+----
+
+[source,shell]
+----
+[nick@secret conjur-quickstart]$ podman exec \
+  --interactive \
+  --tty \
+  conjur_client \
+  conjur policy load -b root -f policy/BotApp.yml > my_app_data
+[nick@secret conjur-quickstart]$  
+[nick@secret conjur-quickstart]$ cat my_app_data 
+Loaded policy 'root'
+{
+  "created_roles": {
+    "myConjurAccount:host:BotApp/myDemoApp": {
+      "id": "myConjurAccount:host:BotApp/myDemoApp",
+      "api_key": "3pj3tw0a37bx630ff7zk38yhw7s2swv8ft2z2mx9136ckm901n272j1"
+    },
+    "myConjurAccount:user:Dave@BotApp": {
+      "id": "myConjurAccount:user:Dave@BotApp",
+      "api_key": "wjhrph3ysxz3d6qssep3kp6b823335p7d387prbkrz2pgr1xncp0p"
+    }
+  },
+  "version": 1
+}
+[nick@secret conjur-quickstart]$ 
+----
+
+
+=== Step 3: Log out of Conjur
+
+[source,shell]
+----
+podman exec \
+  --interactive \
+  --tty \
+  conjur_client \
+  conjur logout
+----
+
+[source,shell]
+----
+[nick@secret conjur-quickstart]$ podman exec \
+  --interactive \
+  --tty \
+  conjur_client \
+  conjur logout
+Logged out
+[nick@secret conjur-quickstart]$ 
+----
+
+
+== 3. STORE A SECRET IN CONJUR
+
+=== Step 1: Log in as Dave
+
+https://www.conjur.org/get-started/quick-start/store-secret/
+
+[source,shell]
+----
+cat /home/nick/github/conjur-quickstart/my_app_data
+podman exec \
+  --interactive \
+  --tty \
+  conjur_client \
+  conjur login -i Dave@BotApp
+----
+
+[source,shell]
+----
+podman exec \
+  --interactive \
+  --tty \
+  conjur_client \
+  conjur whoami
+----
+
+=== Step 2: Generate a secret
+
+Generate a value for your application’s secret:
+
+[source,shell]
+----
+secretVal=$(openssl rand -hex 12 | tr -d '\r\n')
+----
+
+[source,shell]
+----
+podman exec \
+  --interactive \
+  --tty \
+  conjur_client \
+  conjur variable set -i BotApp/secretVar -v ${secretVal}
+----
+
+== 4. RUN THE DEMO APP
+
+=== Step 1: Start a bash session
+
+[source,shell]
+----
+cat /home/nick/github/conjur-quickstart/my_app_data
+podman exec \
+  --interactive \
+  --tty \
+  bot_app \
+  bash
+----
+
+Make sure the container has not inherited http_proxy variables with "env | grep -i proxy".
+
+[source,shell]
+----
+curl -d "3pj3tw0a37bx630ff7zk38yhw7s2swv8ft2z2mx9136ckm901n272j1" -k https://proxy/authn/myConjurAccount/host%2FBotApp%2FmyDemoApp/authenticate > /tmp/conjur_token
+----
+
+[source,shell]
+----
+----
+
+[source,shell]
+----
+----
+
+== tear down
+
+[source,shell]
+----
+podman pod stop rootlessconjur
+----
+
+Container conjur_client runs 'sleep infinity'.
+Container bot_app runs 'tail -F anything'.
+
+
+[source,shell]
+----
+[nick@secret conjur-quickstart]$ podman pod ls
+POD ID        NAME            STATUS      CREATED      INFRA ID      # OF CONTAINERS
+4fa7aca8bd9c  rootlessconjur  Degraded    2 hours ago  728ec3271374  8
+[nick@secret conjur-quickstart]$ 
+[nick@secret conjur-quickstart]$ podman pod stop rootlessconjur
+WARN[0010] StopSignal SIGTERM failed to stop container conjur_client in 10 seconds, resorting to SIGKILL 
+WARN[0010] StopSignal SIGTERM failed to stop container bot_app in 10 seconds, resorting to SIGKILL 
+4fa7aca8bd9cde4ade2cf77571c7f5423c4cc37997502059a2ea91f5ae29dce2
+[nick@secret conjur-quickstart]$ 
+[nick@secret conjur-quickstart]$ podman pod ls
+POD ID        NAME            STATUS      CREATED      INFRA ID      # OF CONTAINERS
+4fa7aca8bd9c  rootlessconjur  Exited      2 hours ago  728ec3271374  8
+[nick@secret conjur-quickstart]$ 
+[nick@secret conjur-quickstart]$ podman ps -a
+CONTAINER ID  IMAGE                                            COMMAND               CREATED            STATUS                       PORTS                   NAMES
+728ec3271374  localhost/podman-pause:4.4.1-1692279033                                2 hours ago        Exited (0) 55 seconds ago                            4fa7aca8bd9c-infra
+aff33ebcf2ca  docker.io/cyberark/conjur:latest                                       2 hours ago        Exited (0) 2 hours ago                               openssl
+ff3ff965e7fb  docker.io/cfmanteiga/alpine-bash-curl-jq:latest  tail -F anything      2 hours ago        Exited (137) 45 seconds ago                          bot_app
+a700b289df62  docker.io/library/postgres:10.16                 postgres              2 hours ago        Exited (0) 55 seconds ago    0.0.0.0:8432->5432/tcp  postgres_database
+5218dcb5a149  docker.io/dpage/pgadmin4:latest                                        2 hours ago        Exited (0) 54 seconds ago    0.0.0.0:8081->80/tcp    conjur-quickstart_pgadmin_1
+95a13e7f2808  docker.io/cyberark/conjur:latest                 server                2 hours ago        Exited (1) 55 seconds ago    0.0.0.0:8080->80/tcp    conjur_server
+5a354bc9a565  docker.io/library/nginx:1.13.6-alpine            nginx -g daemon o...  2 hours ago        Exited (0) 55 seconds ago    0.0.0.0:8443->443/tcp   nginx_proxy
+967be9775594  docker.io/cyberark/conjur-cli:8                  infinity              About an hour ago  Exited (137) 45 seconds ago                          conjur_client
+[nick@secret conjur-quickstart]$ 
+----
+
+
+== todo - AAM Xperience Workshop
+
+https://github.com/sheeshkebab/blog-data/tree/master/conjur
+

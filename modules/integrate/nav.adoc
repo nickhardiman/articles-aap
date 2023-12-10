@@ -3,4 +3,5 @@
 ** xref:ms-wsl.adoc[]
 ** xref:azure-entra-id.adoc[]
 ** xref:azure-key-vault.adoc[]
+** xref:cyberark.adoc[]
 
