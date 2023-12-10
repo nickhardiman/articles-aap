@@ -1,7 +1,6 @@
 = ansible molecule  
 Nick Hardiman <nhardima@redhat.com>
 :source-highlighter: pygments
-:toc: 
 :revdate: 10-08-2020
 
 Had a go in 2020, went down a rabbit hole of brokenness. 

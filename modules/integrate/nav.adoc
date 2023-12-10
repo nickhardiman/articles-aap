@@ -1,2 +1,4 @@
 * xref:index.adoc[]
+** xref:servicenow.adoc[]
+** xref:ms-wsl.adoc[]
 

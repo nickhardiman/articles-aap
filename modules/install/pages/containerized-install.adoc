@@ -1,0 +1,11 @@
+= containerized install
+Nick Hardiman <nhardima@redhat.com>
+:source-highlighter: highlight.js
+:revdate: 10-12-2023
+
+
+== links 
+
+https://access.redhat.com/downloads/content/480/ver=2.4/rhel---9/2.4/x86_64/product-software
+
+https://www.ansible.com/blog/announcing-containerized-ansible-automation-platform

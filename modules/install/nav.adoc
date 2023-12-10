@@ -2,3 +2,4 @@
 ** xref:install-manual-disconnected.adoc[]
 ** xref:install-manual-connected.adoc[]
 ** xref:install-auto-connected.adoc[]
+** xref:containerized-install.adoc[]
