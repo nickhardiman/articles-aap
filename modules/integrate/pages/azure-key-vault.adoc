@@ -1,0 +1,18 @@
+= Azure Key Vault
+Nick Hardiman <nhardima@redhat.com>
+:source-highlighter: highlight.js
+:revdate: 10-12-2023
+
+== links 
+
+https://learn.microsoft.com/en-us/azure/key-vault/
+
+https://www.tinfoilcipher.co.uk/2021/05/17/ansible-tower-and-azure-keyvault-managing-multiple-secrets/
+
+https://azure.microsoft.com/en-gb/free#all-free-services
+
+https://learn.microsoft.com/en-gb/azure/cloud-shell/overview
+
+https://azure.microsoft.com/en-gb/get-started/welcome-to-azure/?subscriptionId=0109f310-25b4-408d-8557-110eb7af495e
+
+
