@@ -1,0 +1,13 @@
+= DTAP (Dev, Test, Acceptance, and Production) workflow with Ansible
+Nick Hardiman <nhardima@redhat.com>
+:source-highlighter: highlight.js
+:toc:
+:revdate: 10-12-2023
+
+
+== links
+
+DaC (Deployment as Code)  - Is this a thing?
+
+https://www.ansible.com/blog/automation-controller-workflow-deployment-as-code
+

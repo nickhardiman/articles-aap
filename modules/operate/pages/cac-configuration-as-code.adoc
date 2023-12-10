@@ -1,0 +1,24 @@
+= CaC (Config as Code) with Ansible
+Nick Hardiman <nhardima@redhat.com>
+:source-highlighter: highlight.js
+:toc:
+:revdate: 10-12-2023
+
+
+== links 
+
+https://aap2.demoredhat.com/exercises/ansible_config_as_code/
+
+Tom Page's articles
+
+https://www.redhat.com/en/blog/creating-ansible-controller-config-code-pipeline
+
+https://www.redhat.com/en/blog/configuring-ansible-tower-tower-configuration-collection
+
+Chris Renwick's articles
+
+https://www.redhat.com/sysadmin/gitlab-runner-ansible-config-code
+
+https://www.redhat.com/sysadmin/cicd-gitlab-runner-ansible
+
+https://www.redhat.com/sysadmin/self-service-config-code-ansible

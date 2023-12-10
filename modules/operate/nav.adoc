@@ -5,3 +5,5 @@
 ** xref:awxkit.adoc[]
 ** xref:collection-awx.awx.adoc[]
 ** xref:pre-commit.adoc[]
+** xref:cac-configuration-as-code.adoc[]
+** xref:dtap-development-test-acceptance-production.adoc[]
