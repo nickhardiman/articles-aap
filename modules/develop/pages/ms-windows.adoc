@@ -1,0 +1,8 @@
+= Microsoft Windows managed node  
+Nick Hardiman <nhardima@redhat.com>
+:source-highlighter: pygments
+:revdate: 10-12-2023
+
+== links
+
+https://role.rhu.redhat.com/rol-rhu/app/courses/do417-2.8/pages/ch02

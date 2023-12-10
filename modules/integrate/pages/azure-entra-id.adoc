@@ -1,0 +1,10 @@
+= Azure Entra ID (AD)
+Nick Hardiman <nhardima@redhat.com>
+:source-highlighter: highlight.js
+:revdate: 10-12-2023
+
+== links 
+
+https://learn.microsoft.com/en-us/entra/
+
+
