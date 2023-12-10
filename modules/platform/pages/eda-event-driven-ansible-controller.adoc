@@ -1,0 +1,18 @@
+= EDA (Event Driven Ansible) controller
+Nick Hardiman <nhardima@redhat.com>
+:source-highlighter: highlight.js
+:toc:
+:revdate: 10-12-2023
+
+install
+https://access.redhat.com/documentation/en-us/red_hat_ansible_automation_platform/2.4/html-single/getting_started_with_event-driven_ansible_guide/index#installation-of-eda-controller
+
+https://www.linkedin.com/pulse/event-driven-automation-ansible-magnus-glantz
+
+https://github.com/mglantz/event-driven-ansible-demo
+
+https://github.com/ansible/event-driven-ansible/tree/main/extensions/eda/plugins/event_source
+
+https://www.redhat.com/en/interactive-labs/ansible#event-driven-automation
+
+https://www.ansible.com/blog/introducing-event-driven-ansible
