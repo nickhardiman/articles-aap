@@ -1,0 +1,28 @@
+= ServiceNow
+Nick Hardiman <nhardima@redhat.com>
+:source-highlighter: highlight.js
+:revdate: 31-10-2023
+
+== links 
+
+* Now Learning                      https://nowlearning.servicenow.com/lxp
+* ServiceNow Website                http://servicenow.com/
+* ServiceNow Product Documentation  https://docs.servicenow.com/
+* Knowledge Conference              https://knowledge.servicenow.com/
+* ServiceNow Developer Community    https://community.servicenow.com/community
+* ServiceNow Community
+* Connect via Social Media
+
+https://nowlearning.servicenow.com/lxp/en/now-platform/welcome-to-servicenow?course_id=023708df1bc0119cf95e99b8bd4bcb76&id=learning_course_prev
+
+System Administrator Career Journey
+https://nowlearning.servicenow.com/lxp/en/pages/journey-overview?id=journey_overview&journey_id=55f79b4a1b96add013f9a6c1b24bcb30
+
+https://developer.servicenow.com/dev.do#!/learn/learning-plans/tokyo/new_to_servicenow/app_store_learnv2_buildmyfirstapp_tokyo_servicenow_basics_objectives
+
+https://docs.servicenow.com/bundle/vancouver-product-directory/page/product-directory/reference/product-directory.html
+
+https://docs.servicenow.com/bundle/vancouver-platform-user-interface/page/get-started/servicenow-overview/concept/set-up-preferences-next-experience.html
+
+
+

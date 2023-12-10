@@ -30,4 +30,4 @@ nav:
 - modules/upgrade/nav.adoc 
 - modules/workflow/nav.adoc 
 - modules/deprovision/nav.adoc 
-- modules/manage/nav.adoc 
+- modules/integrate/nav.adoc 

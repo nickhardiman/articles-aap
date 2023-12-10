@@ -1,7 +1,6 @@
 = DTAP (Dev, Test, Acceptance, and Production) workflow with Ansible
 Nick Hardiman <nhardima@redhat.com>
 :source-highlighter: highlight.js
-:toc:
 :revdate: 10-12-2023
 
 
@@ -10,4 +9,17 @@ Nick Hardiman <nhardima@redhat.com>
 DaC (Deployment as Code)  - Is this a thing?
 
 https://www.ansible.com/blog/automation-controller-workflow-deployment-as-code
+
+
+=== CI/CD 
+
+https://onionlinux.com/how-to-create-a-simple-ci-cd-pipeline-with-ansible-tower/
+
+https://www.ansible.com/blog/devops-and-ci/cd-with-automation-controller
+
+https://www.youtube.com/watch?v=9PJUoaCdRpw
+
+Craig Brandt
+https://www.ansible.com/blog/devops-and-ci/cd-with-automation-controller
+https://github.com/craig-br/demos/tree/main/blogs/devops-controller-blog
 
