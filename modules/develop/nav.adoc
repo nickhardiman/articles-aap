@@ -1,5 +1,3 @@
 * xref:index.adoc[]
 ** xref:container-certificate.adoc[]
 ** xref:container-collection.adoc[]
-** xref:upgrade.adoc[]
-** xref:hub.adoc[]

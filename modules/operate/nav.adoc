@@ -7,3 +7,4 @@
 ** xref:pre-commit.adoc[]
 ** xref:cac-configuration-as-code.adoc[]
 ** xref:dtap-development-test-acceptance-production.adoc[]
+** xref:upgrade.adoc[]

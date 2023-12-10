@@ -1,0 +1,41 @@
+= ansible molecule  
+Nick Hardiman <nhardima@redhat.com>
+:source-highlighter: pygments
+:toc: 
+:revdate: 10-08-2020
+
+Had a go in 2020, went down a rabbit hole of brokenness. 
+
+== docs 
+
+my notes
+
+/Users/nickhardiman/Documents/red-hat/product/ansible/molecule-notes.txt
+
+/Users/nickhardiman/Documents/red-hat/job/blog/github/articles-ansible/modules/use-ansible-tools/pages/tool-molecule.adoc
+https://github.com/nickhardiman/articles-ansible/blob/main/modules/use-ansible-tools/pages/tool-molecule.adoc
+
+https://cloudautomation.pharriso.co.uk/post/vmware-molecule/
+https://cloudautomation.pharriso.co.uk/post/molecule-vm-create/
+
+https://developers.redhat.com/articles/2023/09/13/introducing-ansible-molecule-ansible-automation-platform?source=sso#installing_molecule_developer_preview
+similar to 
+https://ansible.readthedocs.io/projects/molecule/getting-started/
+
+https://molecule.readthedocs.io/ 
+
+Molecule project documentation
+https://ansible.readthedocs.io/projects/molecule/
+Check out the detailed documentation on the upstream molecule project 
+that has a lot of getting started use cases with Molecule.
+
+https://groups.google.com/g/molecule-users
+
+no molecule videos at 
+https://www.youtube.com/ansibleautomation
+
+Ansible Collections: Role Tests with Molecule @ericsysmin
+https://ericsysmin.com/2020/04/30/ansible-collections-role-tests-with-molecule/
+
+Molecule v3 Slides @ssbarnea.
+https://sbarnea.com/slides/molecule/#/
