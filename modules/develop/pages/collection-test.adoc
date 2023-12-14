@@ -1,0 +1,108 @@
+= test a collection
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 14-12-2023
+
+woefully incomplete
+
+https://docs.ansible.com/ansible/latest/dev_guide/developing_collections_testing.html
+
+https://docs.ansible.com/ansible/latest/dev_guide/testing_running_locally.html#testing-running-locally
+
+
+
+[source,shell]
+----
+[nick@dev ~]$ sudo dnf  --enablerepo=ansible-automation-platform-2.4-for-rhel-9-x86_64-rpms install ansible-test
+Updating Subscription Management repositories.
+Red Hat Enterprise Linux 9 for x86_64 - BaseOS (RPMs)             161 kB/s | 4.1 kB     00:00    
+Red Hat Ansible Automation Platform 2.4 for RHEL 9 x86_64 (RPMs)   94 kB/s | 4.0 kB     00:00    
+Red Hat Enterprise Linux 9 for x86_64 - AppStream (RPMs)          166 kB/s | 4.5 kB     00:00    
+Dependencies resolved.
+==================================================================================================
+ Package      Arch   Version         Repository                                              Size
+==================================================================================================
+Installing:
+ ansible-test noarch 2.15.4-1.el9ap  ansible-automation-platform-2.4-for-rhel-9-x86_64-rpms 687 k
+
+Transaction Summary
+==================================================================================================
+Install  1 Package
+
+Total download size: 687 k
+Installed size: 2.7 M
+Is this ok [y/N]: y
+Downloading Packages:
+ansible-test-2.15.4-1.el9ap.noarch.rpm                             14 MB/s | 687 kB     00:00    
+--------------------------------------------------------------------------------------------------
+Total                                                              14 MB/s | 687 kB     00:00     
+Running transaction check
+Transaction check succeeded.
+Running transaction test
+Transaction test succeeded.
+Running transaction
+  Preparing        :                                                                          1/1 
+  Installing       : ansible-test-2.15.4-1.el9ap.noarch                                       1/1 
+  Running scriptlet: ansible-test-2.15.4-1.el9ap.noarch                                       1/1 
+  Verifying        : ansible-test-2.15.4-1.el9ap.noarch                                       1/1 
+Installed products updated.
+
+Installed:
+  ansible-test-2.15.4-1.el9ap.noarch                                                              
+
+Complete!
+[nick@dev ~]$ 
+----
+
+
+
+----
+[nick@dev ~]$ cd /home/nick/ansible/collections/ansible_collections/my_namespace/my_collection/
+[nick@dev my_collection]$ 
+[nick@dev my_collection]$ ansible-test sanity 
+Running sanity test "action-plugin-docs"
+Running sanity test "ansible-doc"
+Running sanity test "changelog"
+Running sanity test "compile" on Python 2.7
+Running sanity test "compile" on Python 3.5
+Running sanity test "compile" on Python 3.6
+Running sanity test "compile" on Python 3.7
+Running sanity test "compile" on Python 3.8
+Running sanity test "compile" on Python 3.9
+Running sanity test "compile" on Python 3.10
+Running sanity test "compile" on Python 3.11
+Running sanity test "empty-init"
+Running sanity test "future-import-boilerplate"
+Running sanity test "ignores"
+Running sanity test "import" on Python 2.7
+Running sanity test "import" on Python 3.5
+Running sanity test "import" on Python 3.6
+Running sanity test "import" on Python 3.7
+Running sanity test "import" on Python 3.8
+Running sanity test "import" on Python 3.9
+Running sanity test "import" on Python 3.10
+Running sanity test "import" on Python 3.11
+Running sanity test "line-endings"
+Installing requirements for Python 3.9 [venv]
+Running sanity test "metaclass-boilerplate"
+Running sanity test "no-assert"
+Running sanity test "no-basestring"
+Running sanity test "no-dict-iteritems"
+Running sanity test "no-dict-iterkeys"
+Running sanity test "no-dict-itervalues"
+Running sanity test "no-get-exception"
+Running sanity test "no-illegal-filenames"
+Running sanity test "no-main-display"
+Running sanity test "no-smart-quotes"
+Running sanity test "no-unicode-literals"
+Running sanity test "pep8"
+Running sanity test "pslint"
+Running sanity test "pylint"
+Running sanity test "replace-urlopen"
+Running sanity test "runtime-metadata"
+Installing requirements for Python 3.9 [venv]
+Downloading pip 21.3.1 bootstrap script: https://ci-files.testing.ansible.com/ansible-test/get-pip-21.3.1.py
+^C
+NOTICE: Killed command to avoid an orphaned child process during handling of an unexpected exception.
+[nick@dev my_collection]$ 
+----
