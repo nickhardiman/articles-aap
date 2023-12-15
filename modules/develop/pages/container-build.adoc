@@ -1,0 +1,114 @@
+= build a container
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 15-12-2023
+
+== links
+
+https://aap2.demoredhat.com/exercises/ansible_config_as_code/1-ee/
+
+== Step 2
+
+[source,shell]
+----
+[nick@dev ~]$ source ./lab-build-proxy.sh 
+[nick@dev ~]$ ansible-galaxy collection install infra.ee_utilities containers.podman community.general
+Starting galaxy collection install process
+Process install dependency map
+Starting collection install process
+Downloading https://galaxy.ansible.com/api/v3/plugin/ansible/content/published/collections/artifacts/infra-ee_utilities-3.1.3.tar.gz to /home/nick/.ansible/tmp/ansible-local-71309hco29mb/tmp618_on6w/infra-ee_utilities-3.1.3-1454jwfe
+Downloading https://galaxy.ansible.com/api/v3/plugin/ansible/content/published/collections/artifacts/containers-podman-1.11.0.tar.gz to /home/nick/.ansible/tmp/ansible-local-71309hco29mb/tmp618_on6w/containers-podman-1.11.0-u5_kib_0
+Installing 'infra.ee_utilities:3.1.3' to '/home/nick/.ansible/collections/ansible_collections/infra/ee_utilities'
+infra.ee_utilities:3.1.3 was installed successfully
+Installing 'containers.podman:1.11.0' to '/home/nick/.ansible/collections/ansible_collections/containers/podman'
+containers.podman:1.11.0 was installed successfully
+Downloading https://galaxy.ansible.com/api/v3/plugin/ansible/content/published/collections/artifacts/community-general-8.1.0.tar.gz to /home/nick/.ansible/tmp/ansible-local-71309hco29mb/tmp618_on6w/community-general-8.1.0-ftb0y6_d
+Installing 'community.general:8.1.0' to '/home/nick/.ansible/collections/ansible_collections/community/general'
+community.general:8.1.0 was installed successfully
+[nick@dev ~]$ 
+----
+
+== Step 3
+
+Make a new playbook directory.
+Start adding files. 
+
+[source,shell]
+----
+[nick@dev ~]$ mkdir /home/nick/ansible/playbook/ee
+[nick@dev ~]$ cd /home/nick/ansible/playbook/ee
+[nick@dev ee]$ 
+[nick@dev ee]$ mkdir -p group_vars/all
+[nick@dev ee]$ vim group_vars/all/auth.yml
+----
+
+[source,yaml]
+----
+---
+controller_hostname: "{{ controller_host | default(groups['automationcontroller'][0]) }}"
+controller_username: "{{ controller_user | default('admin') }}"
+controller_password: "{{ controller_pass }}"
+controller_validate_certs: false
+
+ah_host: "{{ ah_hostname | default(groups['automationhub'][0]) }}"
+ah_username: "{{ ah_user | default('admin') }}"
+ah_password: "{{ ah_pass }}"
+ah_path_prefix: 'galaxy'  # this is for private automation hub
+ah_validate_certs: false
+
+ee_registry_username: "{{ ah_username }}"
+ee_registry_password: "{{ ah_password }}"
+ee_registry_dest: "{{ ah_host }}"
+
+ee_base_registry: "{{ ah_host }}"
+ee_base_registry_username: "{{ ah_username }}"
+ee_base_registry_password: "{{ ah_password }}"
+...
+----
+
+== step 4
+
+[source,shell]
+----
+[nick@dev ee]$ vim inventory.yml
+----
+
+[source,yaml]
+----
+---
+all:
+  children:
+    automationcontroller:
+      hosts:
+        aapcontrol.build.example.com:
+
+    automationhub:
+      hosts:
+        aaphub.build.example.com:
+
+    builder:
+      hosts:
+        dev.build.example.com:
+...
+----
+
+== step 5
+
+[source,shell]
+----
+----
+
+
+[source,shell]
+----
+----
+
+
+[source,shell]
+----
+----
+
+
+[source,shell]
+----
+----

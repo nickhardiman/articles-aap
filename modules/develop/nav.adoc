@@ -1,6 +1,7 @@
 * xref:index.adoc[]
 ** xref:ansible-navigator.adoc[]
 ** xref:ansible-builder.adoc[]
+** xref:container-build.adoc[]
 ** xref:container-certificate.adoc[]
 ** xref:container-collection.adoc[]
 ** xref:ms-windows.adoc[]
