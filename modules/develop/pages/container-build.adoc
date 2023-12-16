@@ -94,20 +94,173 @@ all:
 
 == step 5
 
-[source,shell]
-----
-----
-
+Create a vault file.
+The ansible-vault command will  encrypt this file.
 
 [source,shell]
 ----
+[nick@dev ~]$ cd /home/nick/ansible/playbook/ee
+[nick@dev ee]$ vim vault.yml
 ----
+
+[source,yaml]
+----
+---
+vault_pass: 'Password;1'
+machine_pass: 'Password;1'
+controller_pass: 'Password;1'
+ah_pass: 'Password;1'
+controller_api_user_pass: 'Password;1'
+ah_token_password: 'Password;1'
+student_account: 'nick'
+...
+----
+
+Create a password file for encryption.
+The ansible-vault command will  use this password as an encryption key.
+
+[source,shell]
+----
+[nick@dev ee]$ echo 'Password;1' > .password
+[nick@dev ee]$ 
+----
+
+Create an ansible.cfg file to point to the .password file.
+
+[source,shell]
+----
+[nick@dev ee]$ echo -e "[defaults]\nvault_password_file=.password\n" >> ansible.cfg 
+[nick@dev ee]$ 
+[nick@dev ee]$ cat ansible.cfg 
+[defaults]
+vault_password_file=.password
+
+[nick@dev ee]$ 
+----
+
+Encrypt vault with the password in the .password file.
+
+[source,shell]
+----
+[nick@dev ee]$ ansible-vault encrypt vault.yml
+Encryption successful
+[nick@dev ee]$ 
+----
+
+
+== Step 6
+
+[source,shell]
+----
+[nick@dev ee]$ mkdir playbooks
+[nick@dev ee]$ vim playbooks/build_ee.yml 
+----
+
+[source,shell]
+----
+---
+- name: Playbook to configure execution environments
+  hosts: builder
+  gather_facts: true
+  vars_files:
+    - "../vault.yml"
+  tasks:
+    - name: Include ee_builder role
+      ansible.builtin.include_role:
+        name: infra.ee_utilities.ee_builder
+...
+----
+
+== step 7
+
+Create a vars file to hold ansible builder configuration, including name, bindep, python and collections variables.
+
+[source,shell]
+----
+---
+ee_list:
+  - name: "config_as_code"
+    dependencies:
+      galaxy:
+        collections:
+          - name: infra.controller_configuration
+            version: 2.5.1
+          - name: infra.ah_configuration
+            version: 2.0.3
+          - name: infra.ee_utilities
+            version: 3.1.2
+          - name: awx.awx
+            version: 22.4.0
+          - name: containers.podman
+            version: 1.10.3
+          - name: community.general
+            version: 7.3.0
+
+ee_base_image: "{{ ah_host }}/ee-minimal-rhel8:latest"
+ee_image_push: true
+ee_prune_images: false
+ee_create_ansible_config: false
+ee_pull_collections_from_hub: false
+...
+----
+
+
+== step 8
+
+Enable key-based SSH login.
+
+[source,shell]
+----
+[nick@dev ~]$ cd ~/.ssh
+[nick@dev .ssh]$ 
+[nick@dev .ssh]$ cat id_rsa.pub  >> authorized_keys 
+[nick@dev .ssh]$ 
+----
+
+[source,shell]
+----
+ansible-playbook -i inventory.yml -l builder playbooks/build_ee.yml
+----
+
+
 
 
 [source,shell]
 ----
-----
+[nick@dev .ssh]$ cd /home/nick/ansible/playbook/ee
+[nick@dev ee]$ 
+[nick@dev ee]$ ansible-playbook -i inventory.yml -l builder playbooks/build_ee.yml
 
+PLAY [Playbook to configure execution environments] ****************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [dev.build.example.com]
+
+TASK [Include ee_builder role] *************************************************
+
+TASK [infra.ee_utilities.ee_builder : Build EE environments] *******************
+skipping: [dev.build.example.com]
+
+TASK [infra.ee_utilities.ee_builder : Create temporary folder] *****************
+skipping: [dev.build.example.com]
+
+TASK [infra.ee_utilities.ee_builder : Create execution environment definition file] ***
+skipping: [dev.build.example.com]
+
+TASK [infra.ee_utilities.ee_builder : Include templated variable] **************
+skipping: [dev.build.example.com]
+
+TASK [infra.ee_utilities.ee_builder : Display templated variables] *************
+skipping: [dev.build.example.com]
+
+TASK [infra.ee_utilities.ee_builder : Set stats for use in another workflow node] ***
+skipping: [dev.build.example.com]
+
+PLAY RECAP *********************************************************************
+dev.build.example.com      : ok=1    changed=0    unreachable=0    failed=0    skipped=6    rescued=0    ignored=0   
+
+[nick@dev ee]$ 
+----
 
 [source,shell]
 ----
