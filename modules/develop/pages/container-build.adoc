@@ -7,6 +7,31 @@ Nick Hardiman
 
 https://aap2.demoredhat.com/exercises/ansible_config_as_code/1-ee/
 
+No podman containers or container images
+
+[source,shell]
+----
+[nick@dev ee]$ podman images
+REPOSITORY  TAG         IMAGE ID    CREATED     SIZE
+[nick@dev ee]$ 
+[nick@dev ee]$ podman ps -a
+CONTAINER ID  IMAGE       COMMAND     CREATED     STATUS      PORTS       NAMES
+[nick@dev ee]$ 
+----
+
+
+
+[source,shell]
+----
+----
+
+
+
+[source,shell]
+----
+----
+
+
 == Step 2
 
 [source,shell]
@@ -94,6 +119,48 @@ all:
 
 == step 5
 
+
+
+== ansible.cfg
+
+Create an ansible.cfg file to point to the .password file.
+
+[source,shell]
+----
+[nick@dev ee]$ echo -e "[defaults]\nvault_password_file=.password\ninventory=inventory.yml\n" >> ansible.cfg 
+[nick@dev ee]$ 
+[nick@dev ee]$ cat ansible.cfg 
+[defaults]
+vault_password_file=.password
+inventory=inventory.yml
+
+[nick@dev ee]$ 
+----
+
+[source,shell]
+----
+[defaults]
+vault_password_file=.password
+inventory=inventory.yml
+
+# https://www.redhat.com/sysadmin/get-started-private-automation-hub
+[galaxy]
+server_list = private_hub_certified_repo,private_hub_community_repo
+
+[galaxy_server.private_hub_certified_repo]
+url=https://aaphub.build.example.com/api/galaxy/content/rh-certified/
+username=admin
+password=Password;1
+
+[galaxy_server.private_hub_community_repo]
+url=https://aaphub.build.example.com/api/galaxy/content/community/
+username=admin
+password=Password;1
+----
+
+
+== vault
+
 Create a vault file.
 The ansible-vault command will  encrypt this file.
 
@@ -125,18 +192,6 @@ The ansible-vault command will  use this password as an encryption key.
 [nick@dev ee]$ 
 ----
 
-Create an ansible.cfg file to point to the .password file.
-
-[source,shell]
-----
-[nick@dev ee]$ echo -e "[defaults]\nvault_password_file=.password\n" >> ansible.cfg 
-[nick@dev ee]$ 
-[nick@dev ee]$ cat ansible.cfg 
-[defaults]
-vault_password_file=.password
-
-[nick@dev ee]$ 
-----
 
 Encrypt vault with the password in the .password file.
 
@@ -175,7 +230,13 @@ Encryption successful
 
 Create a vars file to hold ansible builder configuration, including name, bindep, python and collections variables.
 
+
 [source,shell]
+----
+[nick@dev ee]$ vim group_vars/all/ah_ee_list.yml
+----
+
+[source,yaml]
 ----
 ---
 ee_list:
@@ -184,17 +245,11 @@ ee_list:
       galaxy:
         collections:
           - name: infra.controller_configuration
-            version: 2.5.1
           - name: infra.ah_configuration
-            version: 2.0.3
           - name: infra.ee_utilities
-            version: 3.1.2
           - name: awx.awx
-            version: 22.4.0
           - name: containers.podman
-            version: 1.10.3
           - name: community.general
-            version: 7.3.0
 
 ee_base_image: "{{ ah_host }}/ee-minimal-rhel8:latest"
 ee_image_push: true
@@ -222,8 +277,44 @@ Enable key-based SSH login.
 ansible-playbook -i inventory.yml -l builder playbooks/build_ee.yml
 ----
 
+Good 
+
+[source,shell]
+----
+[nick@dev ee]$ ansible-playbook playbooks/build_ee.yml 
+
+PLAY [Playbook to configure execution environments] ****************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [dev.build.example.com]
+
+TASK [Include ee_builder role] *************************************************
+
+TASK [infra.ee_utilities.ee_builder : Build EE environments] *******************
+included: /home/nick/.ansible/collections/ansible_collections/infra/ee_utilities/roles/ee_builder/tasks/00_build_ee.yml for dev.build.example.com => (item={'name': 'config_as_code', 'dependencies': {'galaxy': {'collections': [{'name': 'infra.controller_configuration', 'version': '2.5.1'}, {'name': 'infra.ah_configuration', 'version': '2.0.3'}, {'name': 'infra.ee_utilities', 'version': '3.1.2'}, {'name': 'awx.awx', 'version': '22.4.0'}, {'name': 'containers.podman', 'version': '1.10.3'}, {'name': 'community.general', 'version': '7.3.0'}]}}})
+
+TASK [infra.ee_utilities.ee_builder : Create temporary folder] *****************
+changed: [dev.build.example.com]
+
+TASK [infra.ee_utilities.ee_builder : Pull builder images] *********************
+ok: [dev.build.example.com]
+
+TASK [infra.ee_utilities.ee_builder : Copy files/folders to pull from for additional_build_files] ***
+skipping: [dev.build.example.com]
+
+TASK [infra.ee_utilities.ee_builder : Create ansible.cfg file if requested.] ***
+skipping: [dev.build.example.com]
+
+TASK [infra.ee_utilities.ee_builder : Create EE definition file] ***************
+changed: [dev.build.example.com]
+
+TASK [infra.ee_utilities.ee_builder : Run the Ansible Builder Program] *********
+
+----
 
 
+
+Bad
 
 [source,shell]
 ----
@@ -265,3 +356,60 @@ dev.build.example.com      : ok=1    changed=0    unreachable=0    failed=0    s
 [source,shell]
 ----
 ----
+
+Creates a temporary work directory in /tmp/.
+
+Creates ansible-builder files like this. 
+
+[source,shell]
+----
+[nick@dev ~]$ cat /tmp/ansible.g42i5aavtemp/execution_environment.yml
+---
+version: 3
+
+build_arg_defaults:
+  ANSIBLE_GALAXY_CLI_COLLECTION_OPTS: -vv
+
+options:
+  package_manager_path: /usr/bin/microdnf
+
+dependencies:
+  galaxy:
+      collections:
+      -   name: infra.controller_configuration
+          version: 2.5.1
+      -   name: infra.ah_configuration
+          version: 2.0.3
+      -   name: infra.ee_utilities
+          version: 3.1.2
+      -   name: awx.awx
+          version: 22.4.0
+      -   name: containers.podman
+          version: 1.10.3
+      -   name: community.general
+          version: 7.3.0
+
+images:
+  base_image:
+    name: aaphub.build.example.com/ee-minimal-rhel8:latest
+    
+[nick@dev ~]$ 
+----
+
+
+
+Pulls a container image from the PAH.
+
+[source,shell]
+----
+[nick@dev ~]$ podman images
+REPOSITORY                                 TAG         IMAGE ID      CREATED             SIZE
+<none>                                     <none>      b768c00c697d  About a minute ago  325 MB
+<none>                                     <none>      1e564ad86ab3  About a minute ago  325 MB
+aaphub.build.example.com/ee-minimal-rhel8  latest      d62dba42ef3f  2 months ago        325 MB
+[nick@dev ~]$ 
+----
+
+Pulls collections from the Internet. 
+
+
