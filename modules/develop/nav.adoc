@@ -8,4 +8,5 @@
 ** xref:collection-new.adoc[]
 ** xref:collection-test.adoc[]
 ** xref:collection-to-hub.adoc[]
+** xref:collection-from-hub.adoc[]
 

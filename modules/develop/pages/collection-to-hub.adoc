@@ -4,3 +4,159 @@ Nick Hardiman
 :revdate: 14-12-2023
 
 
+https://www.ansible.com/blog/importing/exporting-collections-in-automation-hubs
+Importing a Collection using CLI
+Step 1
+
+== token
+
+== repo 
+
+published
+
+Repository URL
+https://aaphub.build.example.com/api/galaxy/
+
+code for ansible.cfg
+https://aaphub.build.example.com/ui/ansible/repositories/published/
+> Copy CLI configuration
+
+
+[source,ini]
+----
+[galaxy]
+server_list = published
+
+[galaxy_server.published]
+url=https://aaphub.build.example.com/api/galaxy/
+token=<put your token here>
+----
+
+This is a little different
+
+[source,ini]
+----
+[galaxy_server.private_hub_repo_published]
+url=https://aaphub.build.example.com/api/galaxy/
+username=admin
+password=Password;1
+----
+
+
+== namespace 
+
+Create namespace in hub
+
+my_namespace
+
+has to be done manually in web UI
+
+!!! 
+no POST option at  
+https://aaphub.build.example.com/api/galaxy/content/published/
+https://aaphub.build.example.com/api/galaxy/pulp/api/v3/content/ansible/namespaces/
+https://aaphub.build.example.com/api/galaxy/pulp/api/v3/pulp_ansible/namespaces/
+
+== ansible.cfg
+
+[source,shell]
+----
+[defaults]
+vault_password_file=.password
+inventory=inventory.yml
+
+# https://www.redhat.com/sysadmin/get-started-private-automation-hub
+#
+# check 
+# curl --verbose 'https://admin:Password;1@aaphub.build.example.com/api/galaxy/content/rh-certified/'
+#
+[galaxy]
+server_list = private_hub_repo_validated,private_hub_repo_certified,private_hub_repo_community,private_hub_repo_published
+
+[galaxy_server.private_hub_repo_validated]
+url=https://aaphub.build.example.com/api/galaxy/content/validated/
+username=admin
+password=Password;1
+
+[galaxy_server.private_hub_repo_certified]
+url=https://aaphub.build.example.com/api/galaxy/content/rh-certified/
+username=admin
+password=Password;1
+
+[galaxy_server.private_hub_repo_community]
+url=https://aaphub.build.example.com/api/galaxy/content/community/
+username=admin
+password=Password;1
+
+[galaxy_server.private_hub_repo_published]
+url=https://aaphub.build.example.com/api/galaxy/
+username=admin
+password=Password;1
+----
+
+
+== create a tarball
+
+Build an Ansible collection artifact that can be published to Ansible Galaxy.
+
+The command _ansible-galaxy collection init_  creates everything required for a new collection, including the galaxy.yml file. 
+
+[source,shell]
+----
+[nick@dev my_collection]$ pwd
+/home/nick/ansible/collections/ansible_collections/my_namespace/my_collection
+[nick@dev my_collection]$ ls
+docs  galaxy.yml  meta  playbooks  plugins  README.md  roles  tests
+[nick@dev my_collection]$ 
+----
+
+The _galaxy.yml_ file specifies the name, version and other details. 
+
+[source,shell]
+----
+[nick@dev my_collection]$ cat galaxy.yml 
+### REQUIRED
+# The namespace of the collection. This can be a company/brand/organization or product namespace under which all
+# content lives. May only contain alphanumeric lowercase characters and underscores. Namespaces cannot start with
+# underscores or numbers and cannot contain consecutive underscores
+namespace: my_namespace
+
+# The name of the collection. Has the same character restrictions as 'namespace'
+name: my_collection
+
+# The version of the collection. Must be compatible with semantic versioning
+version: 1.0.0
+
+...
+----
+
+The _ansible-galaxy collection build_ command uses the content of galaxy.yml to archive all the files. 
+
+[source,shell]
+----
+[nick@dev my_collection]$ ansible-galaxy collection build
+Created collection for my_namespace.my_collection at /home/nick/ansible/collections/ansible_collections/my_namespace/my_collection/my_namespace-my_collection-1.0.0.tar.gz
+[nick@dev my_collection]$ 
+----
+
+
+== copy to (import)
+
+ansible-galaxy collection publish awx-awx-21.6.0.tar.gz 
+
+
+[source,shell]
+----
+----
+
+[source,shell]
+----
+----
+
+[source,shell]
+----
+----
+
+[source,shell]
+----
+----
