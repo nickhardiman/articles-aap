@@ -1,4 +1,3 @@
 * xref:index.adoc[]
 ** xref:eda-event-driven-ansible-controller.adoc[]
-** xref:cac-configuration-as-code.adoc[]
 ** xref:hub.adoc[]

@@ -305,7 +305,7 @@ PostgreSQL connection string format
 postgresql://[user[:password]@][netloc][:port][/dbname]
 postgres://postgres:SuperSecretPg@database/postgres
 
-# watch logs for errors 
+Watch logs for errors.
 
 [source,shell]
 ----
