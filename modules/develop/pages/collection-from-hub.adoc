@@ -3,7 +3,8 @@ Nick Hardiman
 :source-highlighter: highlight.js
 :revdate: 14-12-2023
 
-Ansible-galaxy copies from the default location 
+Copy collection _infra.ee_utilities_ from my private automation hub to my default collections location.
+The ansible-galaxy tool uses the default location ~/.ansible/collections/ansible_collections/.
 
 == links 
 
@@ -15,6 +16,8 @@ https://www.redhat.com/sysadmin/get-started-private-automation-hub
 
 
 == ansible.cfg
+
+This version of an ansible configuration file authenticates the default super-user (admin) to the hub using a password, rather than a token.
 
 [source,shell]
 ----

@@ -3,28 +3,100 @@ Nick Hardiman
 :source-highlighter: highlight.js
 :revdate: 19-11-2023
 
+== parts of a new collection 
+
 Build a simple Ansible collection.
 
 The Ansible developer site has a guide to 
 https://docs.ansible.com/ansible/latest/dev_guide/developing_collections.html[developing collections].
-
-== make a new collection 
 
 includes 
 
 * role 
 * playbook
 
-Build a new collection framework.
+
+== /home/nick/ansible/collections/ansible_collections/
+
+The default area for storing Ansible collections is _~/.ansible/collections/ansible_collections/_. 
+Directory .ansible is https://en.wikipedia.org/wiki/Hidden_file_and_hidden_directory[hidden], like all Linux dotfiles.
+For me, the "~" tilde character expands to make the full path /home/nick/ansible/collections/ansible_collections/.
+
+The area I make for creating my own collections is _~/ansible/collections/ansible_collections/_. 
+This new ansible directory is not hidden  (_ansible_, not _.ansible_).
+This directory is not part of the collections path and is not going to be found by a playbook, so I must add config to tell Ansible where to look. 
+
+== create an area for collection development
+
+
+Use the development server. 
+
+Create a place to hold new collections. 
+
 [source,shell]
 ----
-ssh nick@test.build.example.com
+ssh nick@dev.build.example.com
 mkdir -p /home/nick/ansible/collections/ansible_collections
 cd /home/nick/ansible/collections/ansible_collections
-ansible-galaxy collection init my_namespace.my_collection
 ----
 
-Add a role.
+
+== create a development skeleton
+
+Build a new collection framework.
+
+[source,shell]
+----
+ansible-galaxy collection init my_namespace.my_collection
+cd my_namespace/my_collection
+----
+
+== create git repositories for "ansible-collection-mycollection"
+
+Create an remote git repository named *ansible-collection-mycollection*.
+This holds collection my_collection_. 
+The name of the git repository and the name of the Ansible collection don't match.
+
+Create a Gitlab project. 
+Gitlab adds a REAME.md file with some general instructions. 
+
+Create a local git repository that syncs to the remote git repository. 
+
+[source,shell]
+----
+cd  /home/nick/ansible/collections/ansible_collections/my_namespace/my_collection
+# check before initializing a repository
+# replies with a _fatal_ error _not a git repository_
+git status
+# add a git repository to this directory
+# replies with information _Initialized empty Git repository_
+git init .
+# check before adding remotes
+# no reply. No fetch or push location is set.
+git remote -v
+# tell git where upstream is
+git remote add origin https://git.source.example.com/ansible/ansible-collection-mycollection.git
+# the remote repo already contains a file.
+# gitlab added it. 
+# copy from remote to local. The only file is a README.md file. 
+git pull origin main
+----
+
+Check.
+
+[source,shell]
+----
+git status
+git branch -v
+git remote -v
+ls
+----
+
+
+== add a role
+
+Add a test role to the collection.
+
 [source,shell]
 ----
 cd /home/nick/ansible/collections/ansible_collections/my_namespace/my_collection/roles/
@@ -38,7 +110,10 @@ cd my_role/tasks
 echo -e "- name: Say hello\n  debug:\n    msg: Hello\n" >> main.yml 
 ----
 
+== add a playbook
+
 Add a test playbook to the collection.
+
 [source,shell]
 ----
 cd /home/nick/ansible/collections/ansible_collections/my_namespace/my_collection/
@@ -54,31 +129,185 @@ echo '
 ' >  playbooks/test.yml
 ----
 
-Test.
-This should work from anywhere.
+
+== tell Ansible about the new collection directory
+
+Change the collections search path.
+
+Check before. 
+
+[source,shell]
+----
+[nick@dev ~]$ ansible --version | grep collection
+  ansible collection location = /home/nick/.ansible/collections:/usr/share/ansible/collections
+[nick@dev ~]$ 
+----
+
+[source,shell]
+----
+[nick@dev ~]$ export ANSIBLE_COLLECTIONS_PATH=/home/nick/.ansible/collections:/usr/share/ansible/collections:/home/nick/ansible/collections
+[nick@dev ~]$ 
+----
+
+Check after. 
+
+[source,shell]
+----
+[nick@dev ~]$ ansible --version | grep collection
+  ansible collection location = /home/nick/.ansible/collections:/usr/share/ansible/collections:/home/nick/ansible/collections
+[nick@dev ~]$ 
+----
+
+You can also change the search path value temporarily.
+This version changes the search path only while the ansible-playbook command executes. 
+
 [source,shell]
 ----
 ANSIBLE_COLLECTIONS_PATH=/home/nick/ansible/collections \
   ansible-playbook my_namespace.my_collection.test
 ----
 
-transcript
+
+== test the collection
+
+Test.
+Start in any directory.
 
 [source,shell]
 ----
-[nick@test.build.example.com ~]$ ANSIBLE_COLLECTIONS_PATH=/home/nick/ansible/collections ansible-playbook my_namespace.my_collection.test
+[nick@dev tasks]$ cd
+[nick@dev ~]$ 
+[nick@dev ~]$ ansible-playbook my_namespace.my_collection.test
 [WARNING]: provided hosts list is empty, only localhost is available. Note that the implicit localhost does
 not match 'all'
+[WARNING]: running playbook inside collection my_namespace.my_collection
 
-PLAY [localhost] **********************************************************************************************
+PLAY [Say hello] *******************************************************************************************
 
-TASK [my_namespace.my_collection.my_role : Say hello] *********************************************************
+TASK [my_namespace.my_collection.my_role : Say hello] ******************************************************
 ok: [localhost] => {
     "msg": "Hello"
 }
 
-PLAY RECAP ****************************************************************************************************
+PLAY RECAP *************************************************************************************************
 localhost                  : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
 
-[nick@test.build.example.com ~]$ 
+[nick@dev ~]$
+----
+
+Running the ansible-playbook command in a directory without an inventory file causes a _provided hosts list is empty_ warning to appear.
+Specify a directory on the command line to get rid of this warning. 
+
+[source,shell]
+----
+[nick@dev ~]$ ansible-playbook -i localhost, my_namespace.my_collection.test
+[WARNING]: running playbook inside collection my_namespace.my_collection
+
+PLAY [Say hello] 
+...
+----
+
+== commit to the git repository
+
+Check
+
+[source,shell]
+----
+[nick@dev ~]$ cd /home/nick/ansible/collections/ansible_collections/my_namespace/my_collection/
+[nick@dev my_collection]$ 
+[nick@dev my_collection]$ git status
+On branch main
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   README.md
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	galaxy.yml
+	meta/
+	playbooks/
+	plugins/
+	roles/
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[nick@dev my_collection]$ 
+----
+
+[source,shell]
+----
+[nick@dev my_collection]$ git add .
+[nick@dev my_collection]$ 
+[nick@dev my_collection]$ git status
+On branch main
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	modified:   README.md
+	new file:   galaxy.yml
+	new file:   meta/runtime.yml
+	new file:   playbooks/test.yml
+	new file:   plugins/README.md
+	new file:   roles/my_role/README.md
+	new file:   roles/my_role/defaults/main.yml
+	new file:   roles/my_role/handlers/main.yml
+	new file:   roles/my_role/meta/main.yml
+	new file:   roles/my_role/tasks/main.yml
+	new file:   roles/my_role/tests/inventory
+	new file:   roles/my_role/tests/test.yml
+	new file:   roles/my_role/vars/main.yml
+
+[nick@dev my_collection]$ 
+----
+
+[source,shell]
+----
+[nick@dev my_collection]$ git commit -m 'first role and playbook'
+[main 5481e96] first role and playbook
+ 13 files changed, 272 insertions(+), 91 deletions(-)
+ create mode 100644 galaxy.yml
+ create mode 100644 meta/runtime.yml
+ create mode 100644 playbooks/test.yml
+ create mode 100644 plugins/README.md
+ create mode 100644 roles/my_role/README.md
+ create mode 100644 roles/my_role/defaults/main.yml
+ create mode 100644 roles/my_role/handlers/main.yml
+ create mode 100644 roles/my_role/meta/main.yml
+ create mode 100644 roles/my_role/tasks/main.yml
+ create mode 100644 roles/my_role/tests/inventory
+ create mode 100644 roles/my_role/tests/test.yml
+ create mode 100644 roles/my_role/vars/main.yml
+[nick@dev my_collection]$ 
+----
+
+Usually, changes can be copied upstream with the command _git push_.
+The very first git push fails. 
+Git must be told where to push to. 
+
+[source,shell]
+----
+[nick@dev my_collection]$ git push
+fatal: The current branch main has no upstream branch.
+To push the current branch and set the remote as upstream, use
+
+    git push --set-upstream origin main
+
+To have this happen automatically for branches without a tracking
+upstream, see 'push.autoSetupRemote' in 'git help config'.
+
+[nick@dev my_collection]$ 
+----
+
+[source,shell]
+----
+[nick@dev my_collection]$ git push --set-upstream origin main
+Enumerating objects: 28, done.
+Counting objects: 100% (28/28), done.
+Delta compression using up to 2 threads
+Compressing objects: 100% (13/13), done.
+Writing objects: 100% (26/26), 5.20 KiB | 2.60 MiB/s, done.
+Total 26 (delta 0), reused 0 (delta 0), pack-reused 0
+To https://git.source.example.com/ansible/ansible-collection-mycollection.git
+   4a560f1..5481e96  main -> main
+branch 'main' set up to track 'origin/main'.
+[nick@dev my_collection]$ 
 ----
