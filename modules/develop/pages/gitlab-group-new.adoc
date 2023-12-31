@@ -1,0 +1,31 @@
+= create a Gitlab group using the API
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 19-12-2023
+
+
+Create the ansible group.
+This is like a folder to hold Ansible projects. 
+
+== get a token with API permission
+
+???
+Use the web UI
+https://git.source.example.com/-/profile/personal_access_tokens
+
+Add new token
+
+* Token name
+* Expiration date
+* Select scopes
+** api
+
+Create personal access token
+
+Copy the value. 
+
+[source,shell]
+----
+TOKEN="glpat-LQ89656f6pBYtT6yy4zk"
+----
+
