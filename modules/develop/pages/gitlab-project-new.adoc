@@ -1,0 +1,166 @@
+= create a Gitlab project
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 19-12-2023
+
+
+== links
+
+https://docs.gitlab.com/ee/api/projects.html#create-project
+
+This works from any machine.
+
+[source,shell]
+----
+ssh nick@dev.build.example.com
+----
+
+
+== get a token with API permission
+
+https://git.source.example.com/-/profile/personal_access_tokens
+
+Add new token
+
+* Token name
+* Expiration date
+* Select scopes
+** api
+
+Create personal access token
+
+Copy the value. 
+
+[source,shell]
+----
+TOKEN="glpat-LQ89656f6pBYtT6yy4zk"
+----
+
+
+== find the "ansible" group namespace ID
+
+https://docs.gitlab.com/ee/api/namespaces.html
+
+A https://docs.gitlab.com/ee/user/namespace/index.html[namespace] is Gitlab's collective name for user and group names.
+A namespace helps Gitlab users organize their projects.
+
+The namespace ID for ansible is displayed on the web UI at 
+https://git.source.example.com/groups/ansible.
+This method uses the API, not the web UI.
+
+Search for the ansible group ID.
+
+[source,shell]
+----
+TOKEN="glpat-LQ89656f6pBYtT6yy4zk"
+URL="https://git.source.example.com/api/v4/namespaces?search=ansible"
+curl \
+  --verbose \
+  --header "PRIVATE-TOKEN: $TOKEN" \
+  --request GET \
+  "$URL" \
+| jq .
+----
+
+The verbose option displays lots of information about the conversation between curl and the Gitlab server.
+The last part is the payload - data with the ID in it. 
+
+[source,shell]
+----
+[nick@dev ~]$ TOKEN="glpat-LQ89656f6pBYtT6yy4zk"
+...
+* Connected to git.source.example.com (192.168.11.7) port 443 (#0)
+...
+* TLSv1.3 (OUT), TLS handshake, Finished (20):
+...
+* Server certificate:
+*  subject: CN=git.source.example.com
+...
+* Using HTTP2, server supports multi-use
+...
+< HTTP/2 200 
+< server: nginx
+...
+[
+  {
+    "id": 10,
+    "name": "ansible",
+    "path": "ansible",
+    "kind": "group",
+    "full_path": "ansible",
+    "parent_id": null,
+    "avatar_url": null,
+    "web_url": "https://git.source.example.com/groups/ansible",
+    "members_count_with_descendants": 1,
+    "root_repository_size": 45663,
+    "projects_count": 6
+  }
+]
+[nick@dev ~]$ 
+----
+
+
+Copy the _id_ value. 
+
+[source,shell]
+----
+ID=10
+----
+
+
+== create a project
+
+https://docs.gitlab.com/ee/api/projects.html#create-project
+
+Use the curl command.
+
+[source,shell]
+----
+TOKEN="glpat-LQ89656f6pBYtT6yy4zk"
+ID=10
+URL="https://git.source.example.com/api/v4/projects/"
+DATA='
+{
+    "name": "ansible-collection-mycode", 
+    "description": "My new Ansible collection.", 
+    "namespace_id": "10", 
+    "initialize_with_readme": "true"
+}'
+curl \
+  --request POST \
+  --header "PRIVATE-TOKEN: $TOKEN" \
+  --header "Content-Type: application/json" \
+  --data  "$DATA" \
+  --url "$URL" \
+| jq .
+----
+
+The reply contains a lot of settings. 
+
+[source,shell]
+----
+[nick@dev ~]$ TOKEN="glpat-LQ89656f6pBYtT6yy4zk"
+...
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  4431  100  4271  100   160   7545    282 --:--:-- --:--:-- --:--:--  7828
+{
+  "id": 11,
+  "description": "My new Ansible collection.",
+  "name": "ansible-collection-mycode",
+  "name_with_namespace": "ansible / ansible-collection-mycode",
+  "path": "ansible-collection-mycode",
+
+...(another 100 of these)...
+
+  "merge_commit_template": null,
+  "squash_commit_template": null,
+  "issue_branch_template": null,
+  "autoclose_referenced_issues": true
+}
+[nick@dev ~]$ 
+----
+
+
+This project is now visible in the web UI at https://git.source.example.com/ansible/ansible_collection_mycode.
+

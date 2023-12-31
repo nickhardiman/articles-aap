@@ -5,6 +5,7 @@
 ** xref:container-certificate.adoc[]
 ** xref:container-collection.adoc[]
 ** xref:ms-windows.adoc[]
+** xref:gitlab-project-new.adoc[]
 ** xref:collection-new.adoc[]
 ** xref:collection-test.adoc[]
 ** xref:collection-to-hub.adoc[]
