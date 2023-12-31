@@ -104,7 +104,7 @@ Copy the _id_ value.
 
 [source,shell]
 ----
-ID=10
+GROUP_ID=10
 ----
 
 
@@ -117,7 +117,7 @@ Use the curl command.
 [source,shell]
 ----
 TOKEN="glpat-LQ89656f6pBYtT6yy4zk"
-ID=10
+GROUP_ID=10
 URL="https://git.source.example.com/api/v4/projects/"
 DATA='
 {
@@ -136,6 +136,8 @@ curl \
 ----
 
 The reply contains a lot of settings. 
+The first attribute to appear is the project ID. 
+
 
 [source,shell]
 ----
@@ -164,3 +166,40 @@ The reply contains a lot of settings.
 
 This project is now visible in the web UI at https://git.source.example.com/ansible/ansible_collection_mycode.
 
+
+== check your work
+
+Use the project ID to get information about the project.
+
+[source,shell]
+----
+TOKEN="glpat-LQ89656f6pBYtT6yy4zk"
+PROJECT_ID=11
+URL="https://git.source.example.com/api/v4/projects/$PROJECT_ID"
+curl \
+  --header "PRIVATE-TOKEN: $TOKEN" \
+  --request GET \
+  "$URL" \
+| jq .
+----
+
+The reply is a big JSON object. 
+
+[source,shell]
+----
+[nick@dev ~]$ curl --silent  --header "PRIVATE-TOKEN: $TOKEN"   --request GET   "$URL" | jq .
+{
+  "id": 11,
+  "description": "My new Ansible collection.",
+  "name": "ansible-collection-mycode",
+...
+  "permissions": {
+    "project_access": null,
+    "group_access": {
+      "access_level": 50,
+      "notification_level": 3
+    }
+  }
+}
+[nick@dev ~]$ 
+----
