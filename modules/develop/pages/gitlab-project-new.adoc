@@ -1,12 +1,8 @@
-= create a Gitlab project
+= create a Gitlab project using the API
 Nick Hardiman 
 :source-highlighter: highlight.js
 :revdate: 19-12-2023
 
-
-== links
-
-https://docs.gitlab.com/ee/api/projects.html#create-project
 
 This works from any machine.
 
