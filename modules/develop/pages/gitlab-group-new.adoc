@@ -7,7 +7,27 @@ Nick Hardiman
 Create the ansible group.
 This is like a folder to hold Ansible projects. 
 
-== get a token with API permission
+
+== use the development machine
+
+[source,shell]
+----
+ssh nick@dev.build.example.com
+----
+
+
+== make an area for Bash scripts
+
+[source,shell]
+----
+[nick@dev tmp]$ cd
+[nick@dev ~]$ mkdir bash
+[nick@dev ~]$ cd bash/
+[nick@dev bash]$ 
+----
+
+
+== create a token with API permission using the web UI
 
 ???
 Use the web UI

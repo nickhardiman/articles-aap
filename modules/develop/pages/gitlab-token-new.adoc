@@ -1,0 +1,103 @@
+= create a Gitlab token using the API
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 01-01-2024
+
+
+
+== use the development machine
+
+[source,shell]
+----
+ssh nick@dev.build.example.com
+----
+
+
+== make an area for Bash scripts
+
+[source,shell]
+----
+[nick@dev tmp]$ cd
+[nick@dev ~]$ mkdir bash
+[nick@dev ~]$ cd bash/
+[nick@dev bash]$ 
+----
+
+
+
+== create a token with API permission
+
+https://docs.gitlab.com/ee/api/users.html#create-a-personal-access-token-with-limited-scopes-for-the-currently-authenticated-user
+
+
+Add new token
+
+* Token name
+* Expiration date
+* Select scopes
+** api
+
+1
+
+Get the CSRF (Cross-Site Request Forgery) session token. 
+This is a security measure, used to prevent one type of web site attack.
+
+This request also adds a _gitlab_session_ cookie to the cookies file _cookies.txt_. 
+
+https://www.synopsys.com/glossary/what-is-csrf.html
+
+For an explanation of all the square brackets and other odd characters, see 
+https://www.regular-expressions.info/posixbrackets.html.
+
+Based on 
+https://gist.github.com/michaellihs/5ef5e8dbf48e63e2172a573f7b32c638
+
+[source,shell]
+----
+URL="https://git.source.example.com/users/sign_in"
+curl --output /var/tmp/sign_in.html --silent --cookie-jar cookies.txt --include "${URL}"
+# the CSRF token is hidden in an input field in the sign-in form
+CSRF_TOKEN_LINE=$(grep 'name="authenticity_token"' /var/tmp/sign_in.html)
+CSRF_TOKEN=$([[ $CSRF_TOKEN_LINE =~ value=\"([^\"]+) ]] &&     echo ${BASH_REMATCH[1]})
+----
+
+2
+
+Log in
+
+This request adds a _known_sign_in_ cookie to the cookies file. 
+
+[source,shell]
+----
+URL="https://git.source.example.com/users/sign_in"
+USER="nick"
+PASS="Password;1"
+curl -b cookies.txt -c cookies.txt -i "${URL}" \
+	--data "user[login]=${USER}&user[password]=${PASS}" \
+	--data-urlencode "authenticity_token=${CSRF_TOKEN}"
+----
+
+3. send curl GET request to personal access token page to get auth token
+
+[source,shell]
+----
+URL="https://git.source.example.com/profile/personal_access_tokens"
+body_header=$(curl -H 'user-agent: curl' -b cookies.txt -i "${URL}" -s)
+csrf_token=$(echo $body_header | perl -ne 'print "$1\n" if /authenticity_token"[[:blank:]]value="(.+?)"/' | sed -n 1p)
+----
+
+4. curl POST request to send the "generate personal access token form"
+
+[source,shell]
+----
+URL="https://git.source.example.com/profile/personal_access_tokens"
+body_header=$(curl -H 'user-agent: curl' -b cookies.txt -i "${URL}" -s)
+csrf_token=$(echo $body_header | perl -ne 'print "$1\n" if /authenticity_token"[[:blank:]]value="(.+?)"/' | sed -n 1p)
+----
+
+5. Scrape the personal access token from the response HTML
+
+[source,shell]
+----    
+personal_access_token=$(echo $body_header | perl -ne 'print "$1\n" if /created-personal-access-token"[[:blank:]]value="(.+?)"/' | sed -n 1p)    
+----
