@@ -1,0 +1,43 @@
+= download a collection from Galaxy
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 24-11-2022
+
+This config tells the ansible-galaxy comand how to Red Hat certified collections from Ansible Galaxy (https://galaxy.ansible.com/).
+Ansible Galaxy does not require authentication.
+
+[source,shell]
+----
+ansible-galaxy collection install community.general
+----
+
+== ansible.cfg
+
+[source,shell]
+----
+# https://docs.ansible.com/ansible/latest/reference_appendices/config.html
+[defaults]
+inventory=./inventory.ini
+remote_user = ansible_user
+private_key_file = /home/nick/.ssh/ansible-key.priv
+# brand new host so host key is not stored. 
+# We don't want the playbook sitting at this prompt. 
+#   Are you sure you want to continue connecting (yes/no/[fingerprint])?
+host_key_checking = False
+#roles_path = /home/nick/ansible/roles:/usr/share/ansible/roles:/etc/ansible/roles
+collections_paths = ~/.ansible/collections:./collections:/usr/share/ansible/collections
+nocows=1
+
+# config for downloading Red Hat certified collections from Automation Hub, eg.
+#   ansible-galaxy collection install ansible.controller
+# View collections at https://console.redhat.com/ansible/automation-hub/
+#
+[galaxy]
+server_list = galaxy
+
+# Ansible Galaxy does not require authentication.
+# This section does not have a user name, password or token. 
+[galaxy_server.galaxy]
+url=https://galaxy.ansible.com/
+----
+

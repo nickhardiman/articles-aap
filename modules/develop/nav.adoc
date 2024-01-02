@@ -8,6 +8,8 @@
 ** xref:gitlab-token-new.adoc[]
 ** xref:gitlab-group-new.adoc[]
 ** xref:gitlab-project-new.adoc[]
+** xref:collection-from-galaxy.adoc[]
+** xref:collection-from-rh-hub.adoc[]
 ** xref:collection-new.adoc[]
 ** xref:collection-test.adoc[]
 ** xref:collection-to-hub.adoc[]

@@ -1,4 +1,4 @@
-= copy a collection from the hub
+= download a collection from PAH
 Nick Hardiman 
 :source-highlighter: highlight.js
 :revdate: 14-12-2023
