@@ -1,9 +1,10 @@
-= create a Gitlab token using the API
+= create a Gitlab Personal Access Token
 Nick Hardiman 
 :source-highlighter: highlight.js
 :revdate: 01-01-2024
 
 
+Create a Gitlab token with permission to use the API.
 
 == use the development machine
 
@@ -25,22 +26,43 @@ ssh nick@dev.build.example.com
 
 
 
-== create a token with API permission
+== create a token with API permission using a Rails console session
+
+https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html#create-a-personal-access-token-programmatically
+
+
+
+[source,shell]
+----
+sudo -i
+gitlab-rails runner "token = User.find_by_username('nick').personal_access_tokens.create(scopes: ['api'], name: 'runner token', expires_at: 365.days.from_now); token.set_token('token-string-here123'); token.save!"
+----
+
+
+== create a token with API permission using curl
+
+This code based on 
+https://gist.github.com/michaellihs/5ef5e8dbf48e63e2172a573f7b32c638
 
 https://docs.gitlab.com/ee/api/users.html#create-a-personal-access-token-with-limited-scopes-for-the-currently-authenticated-user
 
 
-Add new token
+Add new token.
+Requires these fields. 
+Fields are described in https://docs.gitlab.com/ee/api/users.html#create-a-personal-access-token-with-limited-scopes-for-the-currently-authenticated-user
 
-* Token name
-* Expiration date
-* Select scopes
-** api
+* personal_access_token[name]=my_token - Token name. Not a unique key, you can have many tokens with the same name.
+* personal_access_token[expires_at]=2024-02-01 - Expiration date in ISO format (YYYY-MM-DD). Maximum is 365 days.
+* personal_access_token[scopes][]=api - Select scopes
 
-1
+
+=== get a session authorization token
 
 Get the CSRF (Cross-Site Request Forgery) session token. 
 This is a security measure, used to prevent one type of web site attack.
+
+The server's reply is stored in /var/tmp/pat/sign_in-get.txt.
+This includes both reply headers and reply HTML body. 
 
 This request also adds a _gitlab_session_ cookie to the cookies file _cookies.txt_. 
 
@@ -49,55 +71,163 @@ https://www.synopsys.com/glossary/what-is-csrf.html
 For an explanation of all the square brackets and other odd characters, see 
 https://www.regular-expressions.info/posixbrackets.html.
 
-Based on 
-https://gist.github.com/michaellihs/5ef5e8dbf48e63e2172a573f7b32c638
 
 [source,shell]
 ----
+mkdir /var/tmp/pat/
 URL="https://git.source.example.com/users/sign_in"
-curl --output /var/tmp/sign_in.html --silent --cookie-jar cookies.txt --include "${URL}"
+curl \
+  --silent \
+  --verbose \
+  --output /var/tmp/pat/sign_in-get.txt \
+  --cookie-jar /var/tmp/pat/cookies.txt \
+  "${URL}"
 # the CSRF token is hidden in an input field in the sign-in form
-CSRF_TOKEN_LINE=$(grep 'name="authenticity_token"' /var/tmp/sign_in.html)
-CSRF_TOKEN=$([[ $CSRF_TOKEN_LINE =~ value=\"([^\"]+) ]] &&     echo ${BASH_REMATCH[1]})
+AUTH_TOKEN_LINE=$(grep 'name="authenticity_token"' /var/tmp/pat/sign_in-get.txt)
+AUTH_TOKEN=$([[ $AUTH_TOKEN_LINE =~ value=\"([^\"]+) ]] &&     echo ${BASH_REMATCH[1]})
 ----
 
-2
+=== log in
 
-Log in
-
-This request adds a _known_sign_in_ cookie to the cookies file. 
+This request reads the _gitlab_session_ cookie from the cookie file and adds a new _known_sign_in_ cookie to the file. 
 
 [source,shell]
 ----
 URL="https://git.source.example.com/users/sign_in"
 USER="nick"
 PASS="Password;1"
-curl -b cookies.txt -c cookies.txt -i "${URL}" \
-	--data "user[login]=${USER}&user[password]=${PASS}" \
-	--data-urlencode "authenticity_token=${CSRF_TOKEN}"
+curl \
+  --silent \
+  --verbose \
+  --location \
+  --output /var/tmp/pat/auth-get.txt \
+  --cookie /var/tmp/pat/cookies.txt \
+  --cookie-jar /var/tmp/pat/cookies.txt \
+  --data "user[login]=${USER}&user[password]=${PASS}" \
+  --data-urlencode "authenticity_token=${AUTH_TOKEN}" \
+   "${URL}"
 ----
 
-3. send curl GET request to personal access token page to get auth token
+=== get another session authorization token
+
+Get the personal access token page and copy the CSRF token from it. 
 
 [source,shell]
 ----
-URL="https://git.source.example.com/profile/personal_access_tokens"
-body_header=$(curl -H 'user-agent: curl' -b cookies.txt -i "${URL}" -s)
-csrf_token=$(echo $body_header | perl -ne 'print "$1\n" if /authenticity_token"[[:blank:]]value="(.+?)"/' | sed -n 1p)
+URL="https://git.source.example.com/-/profile/personal_access_tokens"
+curl \
+  --silent \
+  --verbose \
+  --output /var/tmp/pat/pat-get.txt \
+  --cookie /var/tmp/pat/cookies.txt \
+  --header 'user-agent: curl' \
+  "${URL}"
+#
+# the new CSRF token is in one of the meta tags
+CSRF_TOKEN_LINE=$(grep 'name="csrf-token"' /var/tmp/pat/pat-get.txt)
+CSRF_TOKEN=$([[ $CSRF_TOKEN_LINE =~ content=\"([^\"]+) ]] &&     echo ${BASH_REMATCH[1]})
 ----
 
-4. curl POST request to send the "generate personal access token form"
+=== create the new personal access token
+
+Fields are described in https://docs.gitlab.com/ee/api/users.html#create-a-personal-access-token-with-limited-scopes-for-the-currently-authenticated-user
 
 [source,shell]
 ----
-URL="https://git.source.example.com/profile/personal_access_tokens"
-body_header=$(curl -H 'user-agent: curl' -b cookies.txt -i "${URL}" -s)
-csrf_token=$(echo $body_header | perl -ne 'print "$1\n" if /authenticity_token"[[:blank:]]value="(.+?)"/' | sed -n 1p)
+URL="https://git.source.example.com/-/profile/personal_access_tokens"
+PAT_API_NAME=nick_api_token
+PAT_API_EXPIRES=$(date +"%Y-%m-%d" -d "+365 days")
+curl \
+  --silent \
+  --verbose \
+  --output /var/tmp/pat/pat-fields.txt \
+  --cookie /var/tmp/pat/cookies.txt \
+  --data "personal_access_token[name]=${PAT_API_NAME}" \
+  --data "personal_access_token[expires_at]=${PAT_API_EXPIRES}" \
+  --data "personal_access_token[scopes][]=api" \
+  --data-urlencode "authenticity_token=${CSRF_TOKEN}" \
+  --location \
+   "${URL}"
 ----
 
-5. Scrape the personal access token from the response HTML
+=== save the new token
+
+Scrape the personal access token from the response JSON.
 
 [source,shell]
-----    
-personal_access_token=$(echo $body_header | perl -ne 'print "$1\n" if /created-personal-access-token"[[:blank:]]value="(.+?)"/' | sed -n 1p)    
+----
+PAT_API=$(cat /var/tmp/pat/pat-fields.txt | jq --raw-output .new_token)
+echo $PAT_API
+----
+
+
+== the entire script
+
+[source,shell]
+----
+PAT_API_NAME=nick_api_token
+PAT_API_EXPIRES=$(date +"%Y-%m-%d" -d "+365 days")
+
+mkdir /var/tmp/pat/
+
+# 1
+URL="https://git.source.example.com/users/sign_in"
+curl \
+  --output /var/tmp/pat/sign_in-get.txt \
+  --silent \
+  --cookie-jar /var/tmp/pat/cookies.txt \
+  --include \
+  "${URL}"
+# the CSRF token is hidden in an input field in the sign-in form
+AUTH_TOKEN_LINE=$(grep 'name="authenticity_token"' /var/tmp/pat/sign_in-get.txt)
+AUTH_TOKEN=$([[ $AUTH_TOKEN_LINE =~ value=\"([^\"]+) ]] &&     echo ${BASH_REMATCH[1]})
+
+# 2
+URL="https://git.source.example.com/users/sign_in"
+USER="nick"
+PASS="Password;1"
+curl \
+  --silent \
+  --verbose \
+  --location \
+  --output /var/tmp/pat/auth-get.txt \
+  --cookie /var/tmp/pat/cookies.txt \
+  --cookie-jar /var/tmp/pat/cookies.txt \
+  --data "user[login]=${USER}&user[password]=${PASS}" \
+  --data-urlencode "authenticity_token=${AUTH_TOKEN}" \
+   "${URL}"
+
+# 3
+URL="https://git.source.example.com/-/profile/personal_access_tokens"
+curl \
+  --silent \
+  --verbose \
+  --output /var/tmp/pat/pat-get.txt \
+  --header 'user-agent: curl' \
+  --cookie /var/tmp/pat/cookies.txt \
+  "${URL}"
+#
+# the new CSRF token is in one of the meta tags
+CSRF_TOKEN_LINE=$(grep 'name="csrf-token"' /var/tmp/pat/pat-get.txt)
+CSRF_TOKEN=$([[ $CSRF_TOKEN_LINE =~ content=\"([^\"]+) ]] &&     echo ${BASH_REMATCH[1]})
+
+# 4
+URL="https://git.source.example.com/-/profile/personal_access_tokens"
+curl \
+  --silent \
+  --verbose \
+  --output /var/tmp/pat/pat-fields.txt \
+  --cookie /var/tmp/pat/cookies.txt \
+  --data "name=${PAT_API_NAME}" \
+  --data "expires_at=${PAT_API_EXPIRES}" \
+  --data "scopes[]=api" \
+  --data-urlencode "authenticity_token=${CSRF_TOKEN}" \
+  --location \
+   "${URL}"
+
+
+# 5
+PAT_API=$(cat /var/tmp/pat/pat-fields.txt | jq --raw-output .new_token)
+echo $PAT_API > /var/tmp/pat/pat-api.txt
+cat /var/tmp/pat/pat-api.txt
 ----
