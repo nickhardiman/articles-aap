@@ -28,13 +28,9 @@ ssh nick@dev.build.example.com
 ----
 
 
-
-
 == create a token with API permission using a Rails console session
 
 https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html#create-a-personal-access-token-programmatically
-
-
 
 [source,shell]
 ----
@@ -83,6 +79,7 @@ WORK_DIR=/var/tmp/pat
 mkdir $WORK_DIR
 ----
 
+
 === get a session authorization token and cookie
 
 Get the CSRF (Cross-Site Request Forgery) session token. 
@@ -128,6 +125,7 @@ AUTH_TOKEN_LINE=$(grep 'name="authenticity_token"' $WORK_DIR/sign_in-get.txt)
 AUTH_TOKEN=$([[ $AUTH_TOKEN_LINE =~ value=\"([^\"]+) ]] &&     echo ${BASH_REMATCH[1]})
 ----
 
+
 === log in
 
 Authenticate. 
@@ -151,6 +149,7 @@ curl \
   --data-urlencode "authenticity_token=${AUTH_TOKEN}" \
    "${URL}"
 ----
+
 
 === get another session authorization token
 
@@ -256,6 +255,7 @@ Use the _--silent_ option and _jq_ tool.
 [nick@dev ~]$ 
 ----
 
+Try to access the same protected resource with the token.
 
 [source,shell]
 ----
