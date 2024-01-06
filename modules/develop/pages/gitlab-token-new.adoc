@@ -4,7 +4,21 @@ Nick Hardiman
 :revdate: 01-01-2024
 
 
-Create a Gitlab token with permission to use the API.
+Create a  
+https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html[Personal Access Token]
+with permission to use Gitlab's API.
+
+A PAT is a key that looks like this. 
+
+[source,shell]
+----
+glpat-862ezbSoy6xY_Po6x-4X
+----
+
+Knowing a PAT proves to Gitlab that you are who you say you are, similar to knowing a password.
+Possessing a PAT is useful combined with HTTP requests to Gitlab's REST API. 
+Another way of authenticating is OAuth2.
+
 
 == use the development machine
 
@@ -13,16 +27,6 @@ Create a Gitlab token with permission to use the API.
 ssh nick@dev.build.example.com
 ----
 
-
-== make an area for Bash scripts
-
-[source,shell]
-----
-[nick@dev tmp]$ cd
-[nick@dev ~]$ mkdir bash
-[nick@dev ~]$ cd bash/
-[nick@dev bash]$ 
-----
 
 
 
@@ -53,41 +57,81 @@ Fields are described in https://docs.gitlab.com/ee/api/users.html#create-a-perso
 
 * personal_access_token[name]=my_token - Token name. Not a unique key, you can have many tokens with the same name.
 * personal_access_token[expires_at]=2024-02-01 - Expiration date in ISO format (YYYY-MM-DD). Maximum is 365 days.
-* personal_access_token[scopes][]=api - Select scopes
+* personal_access_token[scopes][]=["api","write_repository"] - Select scopes
 
+=== define token values
 
-=== get a session authorization token
+Define a few values for the new token.
+
+The _date_ tool can manage all kinds of dates.
+Get a value one month in the future like this: ```date +"%Y-%m-%d" -d "+1 month"```
+
+[source,shell]
+----
+PAT_API_NAME=nick_api_token
+PAT_API_SCOPES=api
+PAT_API_EXPIRES=$(date +"%Y-%m-%d" -d "+365 days")
+----
+
+=== create a working directory
+
+Create a temporary directory to hold pages and cookies.
+
+[source,shell]
+----
+WORK_DIR=/var/tmp/pat
+mkdir $WORK_DIR
+----
+
+=== get a session authorization token and cookie
 
 Get the CSRF (Cross-Site Request Forgery) session token. 
 This is a security measure, used to prevent one type of web site attack.
 
-The server's reply is stored in /var/tmp/pat/sign_in-get.txt.
+The server's reply is stored in $WORK_DIR/sign_in-get.txt.
 This includes both reply headers and reply HTML body. 
 
-This request also adds a _gitlab_session_ cookie to the cookies file _cookies.txt_. 
+This request also adds a 
+https://docs.gitlab.com/ee/api/rest/#session-cookie[session cookie] 
+named _gitlab_session_ to the cookies file _cookies.txt_. 
 
 https://www.synopsys.com/glossary/what-is-csrf.html
 
 For an explanation of all the square brackets and other odd characters, see 
-https://www.regular-expressions.info/posixbrackets.html.
+https://www.regular-expressions.info/posixbrackets.html.  
 
+
+Get the first page. 
+This page holds the sign-in form.
 
 [source,shell]
 ----
-mkdir /var/tmp/pat/
 URL="https://git.source.example.com/users/sign_in"
 curl \
   --silent \
   --verbose \
-  --output /var/tmp/pat/sign_in-get.txt \
-  --cookie-jar /var/tmp/pat/cookies.txt \
+  --output $WORK_DIR/sign_in-get.txt \
+  --cookie-jar $WORK_DIR/cookies.txt \
   "${URL}"
-# the CSRF token is hidden in an input field in the sign-in form
-AUTH_TOKEN_LINE=$(grep 'name="authenticity_token"' /var/tmp/pat/sign_in-get.txt)
+----
+
+Copy the CSRF token from this page. 
+The CSRF token is hidden in an input field in the sign-in form
+
+!!! Another CSRF token is in one of the meta tags.
+What's the difference?
+
+
+[source,shell]
+----
+AUTH_TOKEN_LINE=$(grep 'name="authenticity_token"' $WORK_DIR/sign_in-get.txt)
 AUTH_TOKEN=$([[ $AUTH_TOKEN_LINE =~ value=\"([^\"]+) ]] &&     echo ${BASH_REMATCH[1]})
 ----
 
 === log in
+
+Authenticate. 
+Prove to the server you are who you say you are, by giving the secret password.
 
 This request reads the _gitlab_session_ cookie from the cookie file and adds a new _known_sign_in_ cookie to the file. 
 
@@ -100,9 +144,9 @@ curl \
   --silent \
   --verbose \
   --location \
-  --output /var/tmp/pat/auth-get.txt \
-  --cookie /var/tmp/pat/cookies.txt \
-  --cookie-jar /var/tmp/pat/cookies.txt \
+  --output $WORK_DIR/auth-get.txt \
+  --cookie $WORK_DIR/cookies.txt \
+  --cookie-jar $WORK_DIR/cookies.txt \
   --data "user[login]=${USER}&user[password]=${PASS}" \
   --data-urlencode "authenticity_token=${AUTH_TOKEN}" \
    "${URL}"
@@ -110,7 +154,7 @@ curl \
 
 === get another session authorization token
 
-Get the personal access token page and copy the CSRF token from it. 
+Get the personal access token page.
 
 [source,shell]
 ----
@@ -118,71 +162,182 @@ URL="https://git.source.example.com/-/profile/personal_access_tokens"
 curl \
   --silent \
   --verbose \
-  --output /var/tmp/pat/pat-get.txt \
-  --cookie /var/tmp/pat/cookies.txt \
+  --output $WORK_DIR/pat-get.txt \
+  --cookie $WORK_DIR/cookies.txt \
   --header 'user-agent: curl' \
   "${URL}"
-#
-# the new CSRF token is in one of the meta tags
-CSRF_TOKEN_LINE=$(grep 'name="csrf-token"' /var/tmp/pat/pat-get.txt)
+----
+
+Copy the CSRF token from it.
+The new CSRF token is in one of the meta tags.
+
+[source,shell]
+----
+CSRF_TOKEN_LINE=$(grep 'name="csrf-token"' $WORK_DIR/pat-get.txt)
 CSRF_TOKEN=$([[ $CSRF_TOKEN_LINE =~ content=\"([^\"]+) ]] &&     echo ${BASH_REMATCH[1]})
 ----
 
-=== create the new personal access token
+
+=== request a new personal access token
 
 Fields are described in https://docs.gitlab.com/ee/api/users.html#create-a-personal-access-token-with-limited-scopes-for-the-currently-authenticated-user
 
 [source,shell]
 ----
 URL="https://git.source.example.com/-/profile/personal_access_tokens"
-PAT_API_NAME=nick_api_token
-PAT_API_EXPIRES=$(date +"%Y-%m-%d" -d "+365 days")
 curl \
   --silent \
   --verbose \
-  --output /var/tmp/pat/pat-fields.txt \
-  --cookie /var/tmp/pat/cookies.txt \
+  --output $WORK_DIR/pat-fields.txt \
+  --cookie $WORK_DIR/cookies.txt \
   --data "personal_access_token[name]=${PAT_API_NAME}" \
   --data "personal_access_token[expires_at]=${PAT_API_EXPIRES}" \
-  --data "personal_access_token[scopes][]=api" \
+  --data "personal_access_token[scopes][]=${PAT_API_SCOPES}" \
   --data-urlencode "authenticity_token=${CSRF_TOKEN}" \
   --location \
    "${URL}"
 ----
 
+
 === save the new token
 
 Scrape the personal access token from the response JSON.
+Save the value in a file in your home directory.
 
 [source,shell]
 ----
-PAT_API=$(cat /var/tmp/pat/pat-fields.txt | jq --raw-output .new_token)
-echo $PAT_API
+PAT_API=$(cat $WORK_DIR/pat-fields.txt | jq --raw-output .new_token)
+echo $PAT_API > ~/pat-api.txt
+echo "Token saved in ~/pat-api.txt."
+echo "Try something like this."
+echo 'export PAT_API=$(< ~/pat-api.txt)'
 ----
 
 
-== the entire script
+== check the token using the web UI
+
+Open a web browser. 
+
+Go to https://git.source.example.com/
+
+Find the token page. icon > Edit profile > https://git.source.example.com/-/profile/personal_access_tokens[Access Tokens]
+
+The new token is listed. 
+
+
+== check the token using the CLI
+
+Send a request to Gitlab's 
+https://docs.gitlab.com/ee/api/rest/[REST API].
+
+Try to access a protected resource without a token.
 
 [source,shell]
 ----
+[nick@dev ~]$ curl  https://git.source.example.com/api/v4/ | jq .
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100    25  100    25    0     0    423      0 --:--:-- --:--:-- --:--:--   423
+{
+  "error": "404 Not Found"
+}
+[nick@dev ~]$ 
+----
+
+Make the same request again, and make the reply easier to read. 
+Use the _--silent_ option and _jq_ tool. 
+
+[source,shell]
+----
+[nick@dev ~]$ curl --silent  https://git.source.example.com/api/v4/personal_access_tokens | jq .
+{
+  "message": "401 Unauthorized"
+}
+[nick@dev ~]$ 
+----
+
+
+[source,shell]
+----
+[nick@dev ~]$ curl --silent --header "PRIVATE-TOKEN: $PAT_API" https://git.source.example.com/api/v4/personal_access_tokens | jq .
+[
+  {
+    "id": 1,
+    "name": "nick_api_token",
+    "revoked": false,
+    "created_at": "2024-01-06T14:13:13.036Z",
+    "scopes": [
+      "api"
+    ],
+    "user_id": 2,
+    "last_used_at": "2024-01-06T14:21:28.051Z",
+    "active": true,
+    "expires_at": "2025-01-05"
+  },
+]
+[nick@dev ~]$ 
+----
+
+
+
+== clean up
+
+[source,shell]
+----
+rm $WORK_DIR/*
+rmdir $WORK_DIR
+----
+
+
+
+== create a script
+
+Make an area for Bash scripts.
+
+[source,shell]
+----
+[nick@dev tmp]$ cd
+[nick@dev ~]$ mkdir bash
+[nick@dev ~]$ cd bash/
+[nick@dev bash]$ 
+----
+
+Edit a new file. 
+
+[source,shell]
+----
+[nick@dev bash]$ vim pat-api-new.sh
+----
+
+Add this content.
+
+[source,shell]
+----
+# define token values
+
 PAT_API_NAME=nick_api_token
+PAT_API_SCOPES=api
 PAT_API_EXPIRES=$(date +"%Y-%m-%d" -d "+365 days")
 
-mkdir /var/tmp/pat/
+# create a working directory
 
-# 1
+WORK_DIR=/var/tmp/pat
+mkdir $WORK_DIR
+
+# get a session authorization token and cookie
+
 URL="https://git.source.example.com/users/sign_in"
 curl \
-  --output /var/tmp/pat/sign_in-get.txt \
   --silent \
-  --cookie-jar /var/tmp/pat/cookies.txt \
-  --include \
-  "${URL}"
-# the CSRF token is hidden in an input field in the sign-in form
-AUTH_TOKEN_LINE=$(grep 'name="authenticity_token"' /var/tmp/pat/sign_in-get.txt)
+  --verbose \
+  --output $WORK_DIR/sign_in-get.txt \
+  --cookie-jar $WORK_DIR/cookies.txt \
+  "${URL}"	
+AUTH_TOKEN_LINE=$(grep 'name="authenticity_token"' $WORK_DIR/sign_in-get.txt)
 AUTH_TOKEN=$([[ $AUTH_TOKEN_LINE =~ value=\"([^\"]+) ]] &&     echo ${BASH_REMATCH[1]})
 
-# 2
+# log in
+
 URL="https://git.source.example.com/users/sign_in"
 USER="nick"
 PASS="Password;1"
@@ -190,44 +345,101 @@ curl \
   --silent \
   --verbose \
   --location \
-  --output /var/tmp/pat/auth-get.txt \
-  --cookie /var/tmp/pat/cookies.txt \
-  --cookie-jar /var/tmp/pat/cookies.txt \
+  --output $WORK_DIR/auth-get.txt \
+  --cookie $WORK_DIR/cookies.txt \
+  --cookie-jar $WORK_DIR/cookies.txt \
   --data "user[login]=${USER}&user[password]=${PASS}" \
   --data-urlencode "authenticity_token=${AUTH_TOKEN}" \
    "${URL}"
 
-# 3
+# get another session authorization token
+
 URL="https://git.source.example.com/-/profile/personal_access_tokens"
 curl \
   --silent \
   --verbose \
-  --output /var/tmp/pat/pat-get.txt \
+  --output $WORK_DIR/pat-get.txt \
+  --cookie $WORK_DIR/cookies.txt \
   --header 'user-agent: curl' \
-  --cookie /var/tmp/pat/cookies.txt \
   "${URL}"
-#
-# the new CSRF token is in one of the meta tags
-CSRF_TOKEN_LINE=$(grep 'name="csrf-token"' /var/tmp/pat/pat-get.txt)
+CSRF_TOKEN_LINE=$(grep 'name="csrf-token"' $WORK_DIR/pat-get.txt)
 CSRF_TOKEN=$([[ $CSRF_TOKEN_LINE =~ content=\"([^\"]+) ]] &&     echo ${BASH_REMATCH[1]})
 
-# 4
+# request a new personal access token
+
 URL="https://git.source.example.com/-/profile/personal_access_tokens"
 curl \
   --silent \
   --verbose \
-  --output /var/tmp/pat/pat-fields.txt \
-  --cookie /var/tmp/pat/cookies.txt \
-  --data "name=${PAT_API_NAME}" \
-  --data "expires_at=${PAT_API_EXPIRES}" \
-  --data "scopes[]=api" \
+  --output $WORK_DIR/pat-fields.txt \
+  --cookie $WORK_DIR/cookies.txt \
+  --data "personal_access_token[name]=${PAT_API_NAME}" \
+  --data "personal_access_token[expires_at]=${PAT_API_EXPIRES}" \
+  --data "personal_access_token[scopes][]=${PAT_API_SCOPES}" \
   --data-urlencode "authenticity_token=${CSRF_TOKEN}" \
   --location \
    "${URL}"
 
+# save the new token
 
-# 5
-PAT_API=$(cat /var/tmp/pat/pat-fields.txt | jq --raw-output .new_token)
-echo $PAT_API > /var/tmp/pat/pat-api.txt
-cat /var/tmp/pat/pat-api.txt
+PAT_API=$(cat $WORK_DIR/pat-fields.txt | jq --raw-output .new_token)
+echo $PAT_API > ~/pat-api.txt
+echo "Token saved in ~/pat-api.txt."
+echo "Try something like this."
+echo 'export PAT_API=$(< ~/pat-api.txt)'
+
+#  clean up
+
+rm $WORK_DIR/*
+rmdir $WORK_DIR
 ----
+
+Save. 
+
+Make the script executable. 
+
+
+[source,shell]
+----
+[nick@dev bash]$ chmod 754 ./pat-api-new.sh
+----
+
+
+== check the script
+
+Run.
+This creates another token with the same name.
+
+In the web UI, another row is added to the table in the 
+https://git.source.example.com/-/profile/personal_access_tokens[Access Tokens] 
+page. 
+The _Last Used_ field says _Never_. 
+
+
+[source,shell]
+----
+[nick@dev bash]$ ./pat-api-new.sh
+[nick@dev bash]$ ./pat-new.sh 
+mkdir: cannot create directory ‘/var/tmp/pat’: File exists
+*   Trying 192.168.11.7:443...
+* Connected to git.source.example.com (192.168.11.7) port 443 (#0)
+* ALPN, offering h2
+...
+< x-xss-protection: 1; mode=block
+< strict-transport-security: max-age=63072000
+< referrer-policy: strict-origin-when-cross-origin
+< 
+{ [932 bytes data]
+* Connection #0 to host git.source.example.com left intact
+
+Token saved in ~/pat-api.txt.
+Try something like this.
+export PAT_API=$(< ~/pat-api.txt)
+[nick@dev bash]$ 
+----
+
+Change the four _--verbose_ options in the script to _--include_ to make the script quieter. 
+
+The script displays details of the lower layers of the conversation between curl and Gitlab, mostly about HTTP and TLS protocols.
+These details are useful for development, but distracting for regular use. 
+
