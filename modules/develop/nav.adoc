@@ -12,6 +12,7 @@
 ** xref:gitlab-project-new.adoc[]
 ** xref:gitlab-project-download.adoc[]
 ** xref:collection-new.adoc[]
+** xref:gitlab-workflow-new.adoc[]
 ** xref:collection-test.adoc[]
 ** xref:collection-to-hub.adoc[]
 ** xref:collection-from-hub.adoc[]
