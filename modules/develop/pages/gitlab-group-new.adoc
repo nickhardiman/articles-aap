@@ -7,45 +7,100 @@ Nick Hardiman
 Create the ansible group.
 This is like a folder to hold Ansible projects. 
 
-
-== use the development machine
-
-[source,shell]
-----
-ssh nick@dev.build.example.com
-----
+Use the web UI to view current groups at 
+https://git.source.example.com/dashboard/groups.
 
 
-== make an area for Bash scripts
+=== define group values
+
+Define a few values for the new group.
 
 [source,shell]
 ----
-[nick@dev tmp]$ cd
-[nick@dev ~]$ mkdir bash
-[nick@dev ~]$ cd bash/
-[nick@dev bash]$ 
+GROUP_NAME='My Ansible'
+GROUP_PATH='my-ansible'
+GROUP_DESC='Ansible code I am developing'
+GROUP_VISIBILITY='public'
 ----
 
+== create the group
 
-== create a token with API permission using the web UI
-
-???
-Use the web UI
-https://git.source.example.com/-/profile/personal_access_tokens
-
-Add new token
-
-* Token name
-* Expiration date
-* Select scopes
-** api
-
-Create personal access token
-
-Copy the value. 
+https://docs.gitlab.com/ee/api/groups.html#new-group
 
 [source,shell]
 ----
-TOKEN="glpat-LQ89656f6pBYtT6yy4zk"
+PAT_API=glpat-862ezbSoy6xY_Po6x-4X
+URL="https://git.source.example.com/api/v4/groups"
+curl \
+  --silent \
+  --verbose \
+  --location \
+  --request POST \
+  --header "PRIVATE-TOKEN: $PAT_API" \
+  --data "path=$GROUP_PATH" \
+  --data "name=$GROUP_NAME" \
+  --data "description=$GROUP_DESC" \
+  --data "visibility=$GROUP_VISIBILITY" \
+   "${URL}" \
+| jq .
 ----
 
+Run the command.
+
+The reply holds a lot of data.
+The group ID is the first value displayed.
+This number is used for creating projects in this group.
+
+[source,shell]
+----
+[nick@dev ~]$ curl   --silent   --verbose   --location   --request POST   --header "PRIVATE-TOKEN: $PAT_API"   --data "path=my-ansible"   --data "name=My Ansible"    "${URL}" | jq .
+*   Trying 192.168.11.7:443...
+* Connected to git.source.example.com (192.168.11.7) port 443 (#0)
+* ALPN, offering h2
+...
+* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384
+...
+* Using HTTP2, server supports multi-use
+...
+> POST /api/v4/groups HTTP/2
+...
+< server: nginx
+...
+{
+  "id": 22,
+  "web_url": "https://git.source.example.com/groups/my-ansible",
+  "name": "My Ansible",
+  "path": "my-ansible",
+  "description": "Ansible code I am developing",
+  "visibility": "public",
+  "share_with_group_lock": false,
+  "require_two_factor_authentication": false,
+  "two_factor_grace_period": 48,
+  "project_creation_level": "developer",
+  "auto_devops_enabled": null,
+  "subgroup_creation_level": "maintainer",
+  "emails_disabled": null,
+  "mentions_disabled": null,
+  "lfs_enabled": true,
+  "default_branch_protection": 2,
+  "default_branch_protection_defaults": {},
+  "avatar_url": null,
+  "request_access_enabled": true,
+  "full_name": "My Ansible",
+  "full_path": "my-ansible",
+  "created_at": "2024-01-06T20:16:17.949Z",
+  "parent_id": null,
+  "shared_runners_setting": "enabled",
+  "shared_with_groups": [],
+  "prevent_sharing_groups_outside_hierarchy": false
+}
+[nick@dev ~]$ 
+----
+
+
+== improve the curl command
+
+Change the four _--verbose_ options in the script to _--include_ to make the script quieter. 
+
+The command displays details of the lower layers of the conversation between curl and Gitlab, mostly about HTTP and TLS protocols.
+These details are useful for development, but distracting for regular use. 

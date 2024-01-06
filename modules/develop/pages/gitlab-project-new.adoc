@@ -11,29 +11,19 @@ This works from any machine.
 ssh nick@dev.build.example.com
 ----
 
+=== define group values
 
-== get a token with API permission
-
-https://git.source.example.com/-/profile/personal_access_tokens
-
-Add new token
-
-* Token name
-* Expiration date
-* Select scopes
-** api
-
-Create personal access token
-
-Copy the value. 
+Define a few values for the new group.
 
 [source,shell]
 ----
-TOKEN="glpat-LQ89656f6pBYtT6yy4zk"
+PROJECT_NAME='ansible-collection-mycode'
+PROJECT_DESC='My new Ansible collection.'
+PROJECT_README='true'
 ----
 
 
-== find the "ansible" group namespace ID
+== find the "my-ansible" group namespace ID
 
 https://docs.gitlab.com/ee/api/namespaces.html
 
@@ -48,22 +38,25 @@ Search for the ansible group ID.
 
 [source,shell]
 ----
-TOKEN="glpat-LQ89656f6pBYtT6yy4zk"
-URL="https://git.source.example.com/api/v4/namespaces?search=ansible"
+PAT_API=glpat-862ezbSoy6xY_Po6x-4X
+URL="https://git.source.example.com/api/v4/namespaces?search=my-ansible"
 curl \
+  --silent \
   --verbose \
-  --header "PRIVATE-TOKEN: $TOKEN" \
   --request GET \
+  --header "PRIVATE-TOKEN: $PAT_API" \
   "$URL" \
 | jq .
 ----
+
+Run the command. 
 
 The verbose option displays lots of information about the conversation between curl and the Gitlab server.
 The last part is the payload - data with the ID in it. 
 
 [source,shell]
 ----
-[nick@dev ~]$ TOKEN="glpat-LQ89656f6pBYtT6yy4zk"
+[nick@dev ~]$ PAT_API=glpat-862ezbSoy6xY_Po6x-4X
 ...
 * Connected to git.source.example.com (192.168.11.7) port 443 (#0)
 ...
@@ -79,28 +72,27 @@ The last part is the payload - data with the ID in it.
 ...
 [
   {
-    "id": 10,
-    "name": "ansible",
-    "path": "ansible",
+    "id": 22,
+    "name": "My Ansible",
+    "path": "my-ansible",
     "kind": "group",
-    "full_path": "ansible",
+    "full_path": "my-ansible",
     "parent_id": null,
     "avatar_url": null,
-    "web_url": "https://git.source.example.com/groups/ansible",
+    "web_url": "https://git.source.example.com/groups/my-ansible",
     "members_count_with_descendants": 1,
-    "root_repository_size": 45663,
-    "projects_count": 6
+    "root_repository_size": null,
+    "projects_count": 0
   }
 ]
 [nick@dev ~]$ 
 ----
 
-
 Copy the _id_ value. 
 
 [source,shell]
 ----
-GROUP_ID=10
+GROUP_ID=22
 ----
 
 
@@ -112,27 +104,23 @@ Use the curl command.
 
 [source,shell]
 ----
-TOKEN="glpat-LQ89656f6pBYtT6yy4zk"
-GROUP_ID=10
+PAT_API=glpat-862ezbSoy6xY_Po6x-4X
+GROUP_ID=22
 URL="https://git.source.example.com/api/v4/projects/"
-DATA='
-{
-    "name": "ansible-collection-mycode", 
-    "description": "My new Ansible collection.", 
-    "namespace_id": "10", 
-    "initialize_with_readme": "true"
-}'
 curl \
+  --silent \
+  --verbose \
   --request POST \
-  --header "PRIVATE-TOKEN: $TOKEN" \
-  --header "Content-Type: application/json" \
-  --data  "$DATA" \
+  --header "PRIVATE-TOKEN: $PAT_API" \
+  --data  "name=$PROJECT_NAME" \
+  --data  "description=$PROJECT_DESC" \
+  --data  "initialize_with_readme=$PROJECT_README" \
+  --data  "namespace_id=$GROUP_ID" \
   --url "$URL" \
 | jq .
-----
+
 
 The reply contains a lot of settings. 
-The first attribute to appear is the project ID. 
 
 
 [source,shell]
@@ -143,11 +131,12 @@ The first attribute to appear is the project ID.
                                  Dload  Upload   Total   Spent    Left  Speed
 100  4431  100  4271  100   160   7545    282 --:--:-- --:--:-- --:--:--  7828
 {
-  "id": 11,
+  "id": 13,
   "description": "My new Ansible collection.",
   "name": "ansible-collection-mycode",
-  "name_with_namespace": "ansible / ansible-collection-mycode",
+  "name_with_namespace": "My Ansible / ansible-collection-mycode",
   "path": "ansible-collection-mycode",
+  "path_with_namespace": "my-ansible/ansible-collection-mycode",
 
 ...(another 100 of these)...
 
@@ -160,32 +149,41 @@ The first attribute to appear is the project ID.
 ----
 
 
-This project is now visible in the web UI at https://git.source.example.com/ansible/ansible_collection_mycode.
+This project is now visible in the web UI at https://git.source.example.com/my-ansible/ansible-collection-mycode.
+
 
 
 == check your work
 
+The first attribute to appear in the reply is the new project ID. 
+
+[source,shell]
+----
+PROJECT_ID=13
+----
 Use the project ID to get information about the project.
 
 [source,shell]
 ----
-TOKEN="glpat-LQ89656f6pBYtT6yy4zk"
-PROJECT_ID=11
+PAT_API=glpat-862ezbSoy6xY_Po6x-4X
+PROJECT_ID=13
 URL="https://git.source.example.com/api/v4/projects/$PROJECT_ID"
 curl \
-  --header "PRIVATE-TOKEN: $TOKEN" \
+  --silent \
+  --verbose \
   --request GET \
+  --header "PRIVATE-TOKEN: $PAT_API" \
   "$URL" \
 | jq .
 ----
 
-The reply is a big JSON object. 
+The reply is a big JSON object that is almost the same as the first reply, when creating the project. 
 
 [source,shell]
 ----
 [nick@dev ~]$ curl --silent  --header "PRIVATE-TOKEN: $TOKEN"   --request GET   "$URL" | jq .
 {
-  "id": 11,
+  "id": 13,
   "description": "My new Ansible collection.",
   "name": "ansible-collection-mycode",
 ...

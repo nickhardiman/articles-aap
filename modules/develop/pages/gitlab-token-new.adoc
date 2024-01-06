@@ -394,7 +394,7 @@ rm $WORK_DIR/*
 rmdir $WORK_DIR
 ----
 
-Save. 
+Save your work. 
 
 Make the script executable. 
 
@@ -420,7 +420,6 @@ The _Last Used_ field says _Never_.
 ----
 [nick@dev bash]$ ./pat-api-new.sh
 [nick@dev bash]$ ./pat-new.sh 
-mkdir: cannot create directory ‘/var/tmp/pat’: File exists
 *   Trying 192.168.11.7:443...
 * Connected to git.source.example.com (192.168.11.7) port 443 (#0)
 * ALPN, offering h2
@@ -438,8 +437,14 @@ export PAT_API=$(< ~/pat-api.txt)
 [nick@dev bash]$ 
 ----
 
+
+== improve the script
+
 Change the four _--verbose_ options in the script to _--include_ to make the script quieter. 
 
 The script displays details of the lower layers of the conversation between curl and Gitlab, mostly about HTTP and TLS protocols.
 These details are useful for development, but distracting for regular use. 
 
+Remove the password. 
+Replace with an environment variable.
+Use a key vault to store the password and another tool to copy from vault to variable. 

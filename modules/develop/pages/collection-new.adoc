@@ -1,4 +1,4 @@
-= write an Ansible collection
+= create an Ansible collection
 Nick Hardiman 
 :source-highlighter: highlight.js
 :revdate: 19-11-2023
@@ -16,70 +16,126 @@ includes
 * playbook
 
 
-== /home/nick/ansible/collections/ansible_collections/
+== /home/nick/my-ansible/collections/ansible_collections/
 
 The default area for storing Ansible collections is _~/.ansible/collections/ansible_collections/_. 
 Directory .ansible is https://en.wikipedia.org/wiki/Hidden_file_and_hidden_directory[hidden], like all Linux dotfiles.
-For me, the "~" tilde character expands to make the full path /home/nick/ansible/collections/ansible_collections/.
+For me, the "~" tilde character expands to make the full path /home/nick/my-ansible/collections/ansible_collections/.
 
-The area I make for creating my own collections is _~/ansible/collections/ansible_collections/_. 
-This new ansible directory is not hidden  (_ansible_, not _.ansible_).
+The area I make for creating my own collections is _~/my-ansible/collections/ansible_collections/_. 
+This new ansible directory is not hidden  (_my-ansible_, not _.ansible_).
 This directory is not part of the collections path and is not going to be found by a playbook, so I must add config to tell Ansible where to look. 
 
 == create an area for collection development
 
+Don't start with an empty git repo. 
+ansible-galaxy collection init will trash it. 
 
-Use the development server. 
-
-Create a place to hold new collections. 
+Now you see it ...
 
 [source,shell]
 ----
-ssh nick@dev.build.example.com
-mkdir -p /home/nick/ansible/collections/ansible_collections
-cd /home/nick/ansible/collections/ansible_collections
+[nick@dev ~]$ cd /home/nick/my-ansible/collections/ansible_collections/mynamespace/mycode/
+[nick@dev mycode]$ ls
+README.md
+[nick@dev mycode]$ git status
+On branch main
+Your branch is up to date with 'origin/main'.
+
+nothing to commit, working tree clean
+[nick@dev mycode]$ 
 ----
 
-
-== create a development skeleton
+== create a collection development skeleton
 
 Build a new collection framework.
 
-[source,shell]
-----
-ansible-galaxy collection init my_namespace.my_collection
-cd my_namespace/my_collection
-----
+The _--force_ option is required because the directory already exists, and the _ansible-galaxy_ command doesn't want to risk trashing work.	
 
-== create git repositories for "ansible-collection-mycollection"
-
-Create an remote git repository named *ansible-collection-mycollection*.
-This holds collection my_collection_. 
-The name of the git repository and the name of the Ansible collection don't match.
-
-Create a Gitlab project. 
-Gitlab adds a REAME.md file with some general instructions. 
-
-Create a local git repository that syncs to the remote git repository. 
+Using --force trashes directory content. 
 
 [source,shell]
 ----
-cd  /home/nick/ansible/collections/ansible_collections/my_namespace/my_collection
-# check before initializing a repository
-# replies with a _fatal_ error _not a git repository_
-git status
-# add a git repository to this directory
-# replies with information _Initialized empty Git repository_
-git init .
-# check before adding remotes
-# no reply. No fetch or push location is set.
-git remote -v
-# tell git where upstream is
-git remote add origin https://git.source.example.com/ansible/ansible-collection-mycollection.git
-# the remote repo already contains a file.
-# gitlab added it. 
-# copy from remote to local. The only file is a README.md file. 
-git pull origin main
+[nick@dev mycode]$ cd /home/nick/my-ansible/collections/ansible_collections/
+[nick@dev ansible_collections]$ ansible-galaxy collection init mynamespace.mycode --force
+- Collection mynamespace.mycode was created successfully
+[nick@dev ansible_collections]$ 
+[nick@dev ansible_collections]$ cd mynamespace/mycode
+[nick@dev mycode]$ 
+[nick@dev mycode]$ ls
+docs  galaxy.yml  meta  plugins  README.md  roles
+[nick@dev mycode]$ 
+[nick@dev mycode]$ cat README.md 
+# Ansible Collection - mynamespace.mycode
+
+Documentation for the collection.
+[nick@dev mycode]$ 
+----
+
+...Now you don't.
+
+----
+[nick@dev mycode]$ git status
+fatal: not a git repository (or any of the parent directories): .git
+[nick@dev mycode]$
+----
+
+
+== store the skeleton using git
+
+Create a new local git repository.
+Set it up to sync to the remote Gitlab repository. 
+
+[source,shell]
+----
+[nick@dev ~]$ cd /home/nick/my-ansible/collections/ansible_collections/mynamespace/mycode/
+[nick@dev mycode]$ git init .
+Initialized empty Git repository in /home/nick/my-ansible/collections/ansible_collections/mynamespace/mycode/.git/
+[nick@dev mycode]$ 
+[nick@dev mycode]$ git remote add origin "https://nick:Password;1@git.source.example.com/my-ansible/ansible-collection-mycode.git"
+[nick@dev mycode]$ 
+[nick@dev mycode]$ mv README.md /var/tmp/
+[nick@dev mycode]$ git pull origin main
+From https://git.source.example.com/my-ansible/ansible-collection-mycode
+ * branch            main       -> FETCH_HEAD
+[nick@dev mycode]$ 
+[nick@dev mycode]$ mv /var/tmp/README.md .
+[nick@dev mycode]$ 
+[nick@dev mycode]$ git status
+On branch main
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   README.md
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	galaxy.yml
+	meta/
+	plugins/
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[nick@dev mycode]$ 
+[nick@dev mycode]$ git add .
+[nick@dev mycode]$ 
+[nick@dev mycode]$ git commit -m initial
+[main 7337d53] initial
+ 4 files changed, 154 insertions(+), 91 deletions(-)
+ create mode 100644 galaxy.yml
+ create mode 100644 meta/runtime.yml
+ create mode 100644 plugins/README.md
+[nick@dev mycode]$ 
+[nick@dev mycode]$ git push --set-upstream origin main
+Enumerating objects: 10, done.
+Counting objects: 100% (10/10), done.
+Delta compression using up to 2 threads
+Compressing objects: 100% (6/6), done.
+Writing objects: 100% (8/8), 2.77 KiB | 2.77 MiB/s, done.
+Total 8 (delta 0), reused 0 (delta 0), pack-reused 0
+To https://git.source.example.com/my-ansible/ansible-collection-mycode.git
+   a0ae499..7337d53  main -> main
+branch 'main' set up to track 'origin/main'.
+[nick@dev mycode]$ 
 ----
 
 Check.
@@ -93,13 +149,13 @@ ls
 ----
 
 
-== add a role
+== add a role development skeleton
 
 Add a test role to the collection.
 
 [source,shell]
 ----
-cd /home/nick/ansible/collections/ansible_collections/my_namespace/my_collection/roles/
+cd /home/nick/my-ansible/collections/ansible_collections/mynamespace/mycode/roles/
 ansible-galaxy role init my_role
 ----
 
@@ -110,13 +166,14 @@ cd my_role/tasks
 echo -e "- name: Say hello\n  debug:\n    msg: Hello\n" >> main.yml 
 ----
 
+
 == add a playbook
 
 Add a test playbook to the collection.
 
 [source,shell]
 ----
-cd /home/nick/ansible/collections/ansible_collections/my_namespace/my_collection/
+cd /home/nick/my-ansible/collections/ansible_collections/mynamespace/mycode/
 mkdir playbooks
 echo '
 ---
@@ -125,7 +182,7 @@ echo '
   connection: local
   gather_facts: false
   roles:
-    - name: my_namespace.my_collection.my_role
+    - name: mynamespace.mycode.my_role
 ' >  playbooks/test.yml
 ----
 
@@ -139,13 +196,16 @@ Check before.
 [source,shell]
 ----
 [nick@dev ~]$ ansible --version | grep collection
-  ansible collection location = /home/nick/.ansible/collections:/usr/share/ansible/collections
+  ansible collection location = /home/nick/.my-ansible/collections:/usr/share/my-ansible/collections
 [nick@dev ~]$ 
 ----
 
+Add the new collections path to the end of this list. 
+Use /home/nick/my-ansible/collections, not /home/nick/my-ansible/collections/ansible_collections/mynamespace/mycode/.
+
 [source,shell]
 ----
-[nick@dev ~]$ export ANSIBLE_COLLECTIONS_PATH=/home/nick/.ansible/collections:/usr/share/ansible/collections:/home/nick/ansible/collections
+[nick@dev ~]$ export ANSIBLE_COLLECTIONS_PATH=/home/nick/.my-ansible/collections:/usr/share/my-ansible/collections:/home/nick/my-ansible/collections
 [nick@dev ~]$ 
 ----
 
@@ -154,7 +214,7 @@ Check after.
 [source,shell]
 ----
 [nick@dev ~]$ ansible --version | grep collection
-  ansible collection location = /home/nick/.ansible/collections:/usr/share/ansible/collections:/home/nick/ansible/collections
+  ansible collection location = /home/nick/.my-ansible/collections:/usr/share/my-ansible/collections:/home/nick/my-ansible/collections
 [nick@dev ~]$ 
 ----
 
@@ -163,8 +223,8 @@ This version changes the search path only while the ansible-playbook command exe
 
 [source,shell]
 ----
-ANSIBLE_COLLECTIONS_PATH=/home/nick/ansible/collections \
-  ansible-playbook my_namespace.my_collection.test
+ANSIBLE_COLLECTIONS_PATH=/home/nick/my-ansible/collections \
+  ansible-playbook mynamespace.mycode.test
 ----
 
 
@@ -177,14 +237,14 @@ Start in any directory.
 ----
 [nick@dev tasks]$ cd
 [nick@dev ~]$ 
-[nick@dev ~]$ ansible-playbook my_namespace.my_collection.test
+[nick@dev ~]$ ansible-playbook mynamespace.mycode.test
 [WARNING]: provided hosts list is empty, only localhost is available. Note that the implicit localhost does
 not match 'all'
-[WARNING]: running playbook inside collection my_namespace.my_collection
+[WARNING]: running playbook inside collection mynamespace.mycode
 
 PLAY [Say hello] *******************************************************************************************
 
-TASK [my_namespace.my_collection.my_role : Say hello] ******************************************************
+TASK [mynamespace.mycode.my_role : Say hello] ******************************************************
 ok: [localhost] => {
     "msg": "Hello"
 }
@@ -200,8 +260,8 @@ Specify a directory on the command line to get rid of this warning.
 
 [source,shell]
 ----
-[nick@dev ~]$ ansible-playbook -i localhost, my_namespace.my_collection.test
-[WARNING]: running playbook inside collection my_namespace.my_collection
+[nick@dev ~]$ ansible-playbook -i localhost, mynamespace.mycode.test
+[WARNING]: running playbook inside collection mynamespace.mycode
 
 PLAY [Say hello] 
 ...
@@ -213,9 +273,9 @@ Check
 
 [source,shell]
 ----
-[nick@dev ~]$ cd /home/nick/ansible/collections/ansible_collections/my_namespace/my_collection/
-[nick@dev my_collection]$ 
-[nick@dev my_collection]$ git status
+[nick@dev ~]$ cd /home/nick/my-ansible/collections/ansible_collections/mynamespace/mycode/
+[nick@dev mycode]$ 
+[nick@dev mycode]$ git status
 On branch main
 Changes not staged for commit:
   (use "git add <file>..." to update what will be committed)
@@ -231,14 +291,14 @@ Untracked files:
 	roles/
 
 no changes added to commit (use "git add" and/or "git commit -a")
-[nick@dev my_collection]$ 
+[nick@dev mycode]$ 
 ----
 
 [source,shell]
 ----
-[nick@dev my_collection]$ git add .
-[nick@dev my_collection]$ 
-[nick@dev my_collection]$ git status
+[nick@dev mycode]$ git add .
+[nick@dev mycode]$ 
+[nick@dev mycode]$ git status
 On branch main
 Changes to be committed:
   (use "git restore --staged <file>..." to unstage)
@@ -256,12 +316,12 @@ Changes to be committed:
 	new file:   roles/my_role/tests/test.yml
 	new file:   roles/my_role/vars/main.yml
 
-[nick@dev my_collection]$ 
+[nick@dev mycode]$ 
 ----
 
 [source,shell]
 ----
-[nick@dev my_collection]$ git commit -m 'first role and playbook'
+[nick@dev mycode]$ git commit -m 'first role and playbook'
 [main 5481e96] first role and playbook
  13 files changed, 272 insertions(+), 91 deletions(-)
  create mode 100644 galaxy.yml
@@ -276,38 +336,5 @@ Changes to be committed:
  create mode 100644 roles/my_role/tests/inventory
  create mode 100644 roles/my_role/tests/test.yml
  create mode 100644 roles/my_role/vars/main.yml
-[nick@dev my_collection]$ 
-----
-
-Usually, changes can be copied upstream with the command _git push_.
-The very first git push fails. 
-Git must be told where to push to. 
-
-[source,shell]
-----
-[nick@dev my_collection]$ git push
-fatal: The current branch main has no upstream branch.
-To push the current branch and set the remote as upstream, use
-
-    git push --set-upstream origin main
-
-To have this happen automatically for branches without a tracking
-upstream, see 'push.autoSetupRemote' in 'git help config'.
-
-[nick@dev my_collection]$ 
-----
-
-[source,shell]
-----
-[nick@dev my_collection]$ git push --set-upstream origin main
-Enumerating objects: 28, done.
-Counting objects: 100% (28/28), done.
-Delta compression using up to 2 threads
-Compressing objects: 100% (13/13), done.
-Writing objects: 100% (26/26), 5.20 KiB | 2.60 MiB/s, done.
-Total 26 (delta 0), reused 0 (delta 0), pack-reused 0
-To https://git.source.example.com/ansible/ansible-collection-mycollection.git
-   4a560f1..5481e96  main -> main
-branch 'main' set up to track 'origin/main'.
-[nick@dev my_collection]$ 
+[nick@dev mycode]$ 
 ----
