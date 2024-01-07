@@ -11,7 +11,7 @@ Use the web UI to view current groups at
 https://git.source.example.com/dashboard/groups.
 
 
-=== define group values
+== define group values
 
 Define a few values for the new group.
 

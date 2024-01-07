@@ -11,7 +11,7 @@ This works from any machine.
 ssh nick@dev.build.example.com
 ----
 
-=== define group values
+== define group values
 
 Define a few values for the new group.
 
@@ -118,6 +118,7 @@ curl \
   --data  "namespace_id=$GROUP_ID" \
   --url "$URL" \
 | jq .
+----
 
 
 The reply contains a lot of settings. 
