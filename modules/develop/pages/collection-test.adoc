@@ -9,6 +9,7 @@ https://docs.ansible.com/ansible/latest/dev_guide/developing_collections_testing
 
 https://docs.ansible.com/ansible/latest/dev_guide/testing_running_locally.html#testing-running-locally
 
+https://docs.ansible.com/ansible-core/2.14/dev_guide/testing_sanity.html#testing-sanity
 
 
 [source,shell]
@@ -54,12 +55,71 @@ Complete!
 [nick@dev ~]$ 
 ----
 
+== work around the proxy bug
 
+https://github.com/ansible/ansible/issues/77304
 
+Proxy required.
+
+[source,shell]
 ----
-[nick@dev ~]$ cd /home/nick/ansible/collections/ansible_collections/my_namespace/my_collection/
-[nick@dev my_collection]$ 
-[nick@dev my_collection]$ ansible-test sanity 
+[nick@dev mycode]$ sudo vim /usr/lib/python3.9/site-packages/ansible_test/_internal/util.py
+[sudo] password for nick: 
+----
+
+Add proxy variable names to the list. 
+
+Change from 
+
+[source,python]
+----
+    optional = (
+        'LD_LIBRARY_PATH',
+        'SSH_AUTH_SOCK',
+        # MacOS High Sierra Compatibility
+        # http://sealiesoftware.com/blog/archive/2017/6/5/Objective-C_and_fork_in_macOS_1013.html
+        # Example configuration for macOS:
+        # export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
+        'OBJC_DISABLE_INITIALIZE_FORK_SAFETY',
+        'ANSIBLE_KEEP_REMOTE_FILES',
+        # MacOS Homebrew Compatibility
+        # https://cryptography.io/en/latest/installation/#building-cryptography-on-macos
+        # This may also be required to install pyyaml with libyaml support when installed in non-standard locations.
+        # Example configuration for brew on macOS:
+        # export LDFLAGS="-L$(brew --prefix openssl)/lib/     -L$(brew --prefix libyaml)/lib/"
+        # export  CFLAGS="-I$(brew --prefix openssl)/include/ -I$(brew --prefix libyaml)/include/"
+        'LDFLAGS',
+        'CFLAGS',
+    )
+----
+
+to
+
+
+[source,python]
+----
+    optional = (
+...
+        'LDFLAGS',
+        'CFLAGS',
+        'http_proxy',
+        'HTTPS_PROXY',
+        'no_proxy',
+    )
+----
+
+
+== run tests
+
+Run all tests listed at https://docs.ansible.com/ansible-core/2.14/dev_guide/testing/sanity/index.html.
+
+[source,python]
+----
+[nick@dev ~]$ cd /home/nick/my-ansible/collections/ansible_collections/mynamespace/mycode/
+[nick@dev mycode]$ 
+[nick@dev mycode]$ source ~/lab-build-proxy.sh 
+[nick@dev mycode]$ 
+[nick@dev mycode]$ ansible-test sanity
 Running sanity test "action-plugin-docs"
 Running sanity test "ansible-doc"
 Running sanity test "changelog"
@@ -83,7 +143,6 @@ Running sanity test "import" on Python 3.9
 Running sanity test "import" on Python 3.10
 Running sanity test "import" on Python 3.11
 Running sanity test "line-endings"
-Installing requirements for Python 3.9 [venv]
 Running sanity test "metaclass-boilerplate"
 Running sanity test "no-assert"
 Running sanity test "no-basestring"
@@ -102,7 +161,130 @@ Running sanity test "replace-urlopen"
 Running sanity test "runtime-metadata"
 Installing requirements for Python 3.9 [venv]
 Downloading pip 21.3.1 bootstrap script: https://ci-files.testing.ansible.com/ansible-test/get-pip-21.3.1.py
-^C
-NOTICE: Killed command to avoid an orphaned child process during handling of an unexpected exception.
-[nick@dev my_collection]$ 
+Cached pip 21.3.1 bootstrap script: /home/nick/.ansible/test/cache/get_pip_21_3_1.py
+Collecting pip==21.3.1
+  Downloading pip-21.3.1-py3-none-any.whl (1.7 MB)
+Collecting setuptools==60.8.2
+  Downloading setuptools-60.8.2-py3-none-any.whl (1.1 MB)
+Collecting wheel==0.37.1
+  Downloading wheel-0.37.1-py2.py3-none-any.whl (35 kB)
+Installing collected packages: wheel, setuptools, pip
+Successfully installed pip-21.3.1 setuptools-60.8.2 wheel-0.37.1
+Collecting pyyaml==6.0
+  Downloading PyYAML-6.0-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl (661 kB)
+Saved ./PyYAML-6.0-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl
+Collecting PyYAML==6.0
+  Using cached PyYAML-6.0-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl (661 kB)
+Collecting voluptuous==0.13.1
+  Downloading voluptuous-0.13.1-py3-none-any.whl (29 kB)
+Installing collected packages: voluptuous, PyYAML
+Successfully installed PyYAML-6.0 voluptuous-0.13.1
+ERROR: Found 1 runtime-metadata issue(s) which need to be resolved:
+ERROR: meta/runtime.yml:0:0: expected a dictionary. Got None
+See documentation for help: https://docs.ansible.com/ansible-core/2.14/dev_guide/testing/sanity/runtime-metadata.html
+Running sanity test "shebang"
+Running sanity test "shellcheck"
+Running sanity test "symlinks"
+Running sanity test "use-argspec-type-path"
+Running sanity test "use-compat-six"
+Running sanity test "validate-modules"
+Running sanity test "yamllint"
+Installing requirements for Python 3.9 [venv]
+Using cached pip 21.3.1 bootstrap script: /home/nick/.ansible/test/cache/get_pip_21_3_1.py
+Collecting pip==21.3.1
+  Using cached pip-21.3.1-py3-none-any.whl (1.7 MB)
+Collecting setuptools==60.8.2
+  Using cached setuptools-60.8.2-py3-none-any.whl (1.1 MB)
+Collecting wheel==0.37.1
+  Using cached wheel-0.37.1-py2.py3-none-any.whl (35 kB)
+Installing collected packages: wheel, setuptools, pip
+Successfully installed pip-21.3.1 setuptools-60.8.2 wheel-0.37.1
+Collecting pyyaml==6.0
+  Using cached PyYAML-6.0-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl (661 kB)
+Saved ./PyYAML-6.0-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl
+Collecting pathspec==0.10.1
+  Downloading pathspec-0.10.1-py3-none-any.whl (27 kB)
+Collecting PyYAML==6.0
+  Using cached PyYAML-6.0-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl (661 kB)
+Collecting yamllint==1.28.0
+  Downloading yamllint-1.28.0-py2.py3-none-any.whl (62 kB)
+Installing collected packages: PyYAML, pathspec, yamllint
+Successfully installed PyYAML-6.0 pathspec-0.10.1 yamllint-1.28.0
+ERROR: Found 4 yamllint issue(s) which need to be resolved:
+ERROR: galaxy.yml:69:1: empty-lines: too many blank lines (1 > 0)
+ERROR: playbooks/test.yml:1:1: empty-lines: too many blank lines (1 > 0)
+ERROR: playbooks/test.yml:9:1: empty-lines: too many blank lines (1 > 0)
+ERROR: roles/my_role/tasks/main.yml:6:1: empty-lines: too many blank lines (1 > 0)
+See documentation for help: https://docs.ansible.com/ansible-core/2.14/dev_guide/testing/sanity/yamllint.html
+FATAL: The 2 sanity test(s) listed below (out of 46) failed. See error output above for details.
+runtime-metadata
+yamllint
+[nick@dev mycode]$ 
 ----
+
+== fix failed test runtime-metadata
+
+Check before.
+
+[source,shell]
+----
+[nick@dev mycode]$ ansible-test sanity --test runtime-metadata
+Running sanity test "runtime-metadata"
+ERROR: Found 1 runtime-metadata issue(s) which need to be resolved:
+ERROR: meta/runtime.yml:0:0: expected a dictionary. Got None
+See documentation for help: https://docs.ansible.com/ansible-core/2.14/dev_guide/testing/sanity/runtime-metadata.html
+FATAL: The 1 sanity test(s) listed below (out of 1) failed. See error output above for details.
+runtime-metadata
+[nick@dev mycode]$ 
+----
+
+Fix.
+
+[source,shell]
+----
+[nick@dev mycode]$ echo "requires_ansible: '>=2.9.10'" >> meta/runtime.yml 
+[nick@dev mycode]$ 
+----
+
+Check after.
+
+[source,shell]
+----
+[nick@dev mycode]$ ansible-test sanity --test runtime-metadata
+Running sanity test "runtime-metadata"
+[nick@dev mycode]$ 
+----
+
+
+== fix failed test yamllint
+
+empty-lines errors
+https://yamllint.readthedocs.io/en/stable/rules.html#module-yamllint.rules.empty_lines
+
+Check before.
+
+[source,shell]
+----
+[nick@dev mycode]$ ansible-test sanity --test yamllint
+----
+
+https://docs.ansible.com/ansible/latest/dev_guide/testing/sanity/ignores.html
+
+Ignore
+
+[source,shell]
+----
+[nick@dev mycode]$ mkdir tests/sanity/
+[nick@dev mycode]$ vim tests/sanity/ignore-2.14.txt
+----
+
+galaxy.yml empty-lines
+playbooks/test.yml empty-lines
+
+
+[source,shell]
+----
+[nick@dev mycode]$ mkdir tests/sanity/
+[nick@dev mycode]$ vim tests/sanity/ignore-2.14.txt
+----
+

@@ -60,14 +60,15 @@ git clone "https://$USER:$PASS@git.source.example.com/my-ansible/ansible-collect
 
 [source,shell]
 ----
-[nick@dev ansible_collections]$ git clone "https://$USER:$PASS@git.source.example.com/my-ansible/ansible-collection-mycode.git"
+[nick@dev ~]$ cd /home/nick/my-ansible/collections/ansible_collections/mynamespace/
+[nick@dev mynamespace]$ git clone "https://$USER:$PASS@git.source.example.com/my-ansible/ansible-collection-mycode.git" mycode
 Cloning into 'ansible-collection-mycode'...
 remote: Enumerating objects: 3, done.
 remote: Counting objects: 100% (3/3), done.
 remote: Compressing objects: 100% (2/2), done.
 remote: Total 3 (delta 0), reused 0 (delta 0), pack-reused 0
 Receiving objects: 100% (3/3), done.
-[nick@dev ansible_collections]$ 
+[nick@dev mynamespace]$ 
 ----
 
 

@@ -1,0 +1,138 @@
+= merge a new collection git repo and Gitlab repo
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 19-11-2023
+
+Create a repository on Gitlab with a README file in it. 
+
+Create an Ansible collection skeleton on the workstation, using _ansible-galaxy collection init_.
+
+Merge the two. 
+
+== git clone does not help
+
+If you start with a git repo folder, 
+ansible-galaxy collection init will trash it. 
+
+Now you see it ...
+
+[source,shell]
+----
+[nick@dev ~]$ cd /home/nick/my-ansible/collections/ansible_collections/mynamespace/
+[nick@dev mynamespace]$ git clone "https://$USER:$PASS@git.source.example.com/my-ansible/ansible-collection-mycode.git" mycode
+[nick@dev ~]$ cd mycode/
+[nick@dev mycode]$ ls
+README.md
+[nick@dev mycode]$ git status
+On branch main
+Your branch is up to date with 'origin/main'.
+
+nothing to commit, working tree clean
+[nick@dev mycode]$ 
+----
+
+... then run _ansible-galaxy collection init_ ...
+
+
+== create a collection development skeleton
+
+Build a new collection framework using _ansible-galaxy collection init_.
+
+The _--force_ option is required because the directory already exists, and the _ansible-galaxy_ command doesn't want to risk trashing work.	
+
+Using --force trashes directory content. 
+
+[source,shell]
+----
+[nick@dev mycode]$ cd /home/nick/my-ansible/collections/ansible_collections/
+[nick@dev ansible_collections]$ ansible-galaxy collection init mynamespace.mycode --force
+- Collection mynamespace.mycode was created successfully
+[nick@dev ansible_collections]$ 
+[nick@dev ansible_collections]$ cd mynamespace/mycode
+[nick@dev mycode]$ 
+[nick@dev mycode]$ ls
+docs  galaxy.yml  meta  plugins  README.md  roles
+[nick@dev mycode]$ 
+[nick@dev mycode]$ cat README.md 
+# Ansible Collection - mynamespace.mycode
+
+Documentation for the collection.
+[nick@dev mycode]$ 
+----
+
+... Now you don't.
+
+----
+[nick@dev mycode]$ git status
+fatal: not a git repository (or any of the parent directories): .git
+[nick@dev mycode]$
+----
+
+
+== store the skeleton using git
+
+Create a new local git repository.
+Set it up to sync to the remote Gitlab repository. 
+
+[source,shell]
+----
+[nick@dev ~]$ cd /home/nick/my-ansible/collections/ansible_collections/mynamespace/mycode/
+[nick@dev mycode]$ git init .
+Initialized empty Git repository in /home/nick/my-ansible/collections/ansible_collections/mynamespace/mycode/.git/
+[nick@dev mycode]$ 
+[nick@dev mycode]$ git remote add origin "https://nick:Password;1@git.source.example.com/my-ansible/ansible-collection-mycode.git"
+[nick@dev mycode]$ 
+[nick@dev mycode]$ mv README.md /var/tmp/
+[nick@dev mycode]$ git pull origin main
+From https://git.source.example.com/my-ansible/ansible-collection-mycode
+ * branch            main       -> FETCH_HEAD
+[nick@dev mycode]$ 
+[nick@dev mycode]$ mv /var/tmp/README.md .
+[nick@dev mycode]$ 
+[nick@dev mycode]$ git status
+On branch main
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   README.md
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	galaxy.yml
+	meta/
+	plugins/
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[nick@dev mycode]$ 
+[nick@dev mycode]$ git add .
+[nick@dev mycode]$ 
+[nick@dev mycode]$ git commit -m initial
+[main 7337d53] initial
+ 4 files changed, 154 insertions(+), 91 deletions(-)
+ create mode 100644 galaxy.yml
+ create mode 100644 meta/runtime.yml
+ create mode 100644 plugins/README.md
+[nick@dev mycode]$ 
+[nick@dev mycode]$ git push --set-upstream origin main
+Enumerating objects: 10, done.
+Counting objects: 100% (10/10), done.
+Delta compression using up to 2 threads
+Compressing objects: 100% (6/6), done.
+Writing objects: 100% (8/8), 2.77 KiB | 2.77 MiB/s, done.
+Total 8 (delta 0), reused 0 (delta 0), pack-reused 0
+To https://git.source.example.com/my-ansible/ansible-collection-mycode.git
+   a0ae499..7337d53  main -> main
+branch 'main' set up to track 'origin/main'.
+[nick@dev mycode]$ 
+----
+
+Check.
+
+[source,shell]
+----
+git status
+git branch -v
+git remote -v
+ls
+----
+
