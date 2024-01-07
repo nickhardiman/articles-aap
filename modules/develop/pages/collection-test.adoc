@@ -256,9 +256,15 @@ Running sanity test "runtime-metadata"
 ----
 
 
-== fix failed test yamllint
+== fix failed test yamllint empty-lines
 
-empty-lines errors
+Ignore the _empty-lines_ errors. 
+In general, a YAML parser has no problem with empty lines. 
+I have no best practices guide that says I must not leave empty lines. 
+
+The https://yaml.org/spec/1.2.2/#64-empty-lines[YAML specification] gives empty lines a special meaning in some places. 
+
+The empty-lines rule is described here. 
 https://yamllint.readthedocs.io/en/stable/rules.html#module-yamllint.rules.empty_lines
 
 Check before.
@@ -268,9 +274,8 @@ Check before.
 [nick@dev mycode]$ ansible-test sanity --test yamllint
 ----
 
+Ignore.
 https://docs.ansible.com/ansible/latest/dev_guide/testing/sanity/ignores.html
-
-Ignore
 
 [source,shell]
 ----
@@ -278,10 +283,13 @@ Ignore
 [nick@dev mycode]$ vim tests/sanity/ignore-2.14.txt
 ----
 
-galaxy.yml empty-lines
-playbooks/test.yml empty-lines
+[source,shell]
+----
+galaxy.yml yamllint:empty-lines
+playbooks/test.yml yamllint:empty-lines
+----
 
-
+Check after. 
 [source,shell]
 ----
 [nick@dev mycode]$ mkdir tests/sanity/
