@@ -8,6 +8,10 @@ https://www.ansible.com/blog/importing/exporting-collections-in-automation-hubs
 Importing a Collection using CLI
 Step 1
 
+https://www.ansible.com/blog/fun-with-private-automation-hub-part-1
+https://www.ansible.com/blog/fun-with-private-automation-hub-part-2
+
+
 == token
 
 == repo 
@@ -254,7 +258,32 @@ Message appears.
 Certification status for collection "mynamespace mycode v1.0.0" has been successfully updated.
 
 
-== check
+== look around the web UI
+
+Use the web UI. 
+
+Check the namespace. 
+https://aaphub.build.example.com/ui/namespaces/mynamespace/
+
+Check the collection. 
+https://aaphub.build.example.com/ui/repo/published/mynamespace/mycode/
+
+Go to the collection documentation.
+https://aaphub.build.example.com/ui/repo/published/mynamespace/mycode/docs/
+The collection README.md file appears. 
+It's not helpful. 
+We did not edit this. 
+
+Check the role documentation.
+https://aaphub.build.example.com/ui/repo/published/mynamespace/mycode/content/role/my_role/
+The role README.md appears. 
+It's boilerplate. 
+
+Look at the list of collections in the API page. 
+https://aaphub.build.example.com/api/galaxy/pulp/api/v3/ansible/collections/
+
+
+== install the collection
 
 Download the collection. 
 You don't need an _ansible.cfg_ file if you use the _--token_ and _--server_ options. 
@@ -271,16 +300,39 @@ mynamespace.mycode:1.0.0 was installed successfully
 [nick@dev ~]$ 
 ----
 
+Verify.
+
+[source,shell]
+----
+[nick@dev ~]$ ansible-galaxy collection verify mynamespace.mycode --token  d958f185c374feccd008781a5ebb0e2aac191b51   --server https://aaphub.build.example.com/api/galaxy
+Downloading https://aaphub.build.example.com/api/galaxy/v3/plugin/ansible/content/published/collections/artifacts/mynamespace-mycode-1.0.0.tar.gz to /home/nick/.ansible/tmp/ansible-local-49935ghgn_tu_/tmpr5m3p62q/mynamespace-mycode-1.0.0-nogzclsd
+Verifying 'mynamespace.mycode:1.0.0'.
+Installed collection found at '/home/nick/.ansible/collections/ansible_collections/mynamespace/mycode'
+MANIFEST.json hash: 2447abc6866a7ac676d63b4732da1bce0517f8114e6c0054e7fc097f3087a2ea
+Successfully verified that checksums for 'mynamespace.mycode:1.0.0' match the remote collection.
+[nick@dev ~]$ 
+----
+
 Clean up. 
-Delete the downloaded collection.
+Delete the new collection directory.
+Delete the namespace directory too, if there are no other collections in it. 
 The _ansible-galaxy_ tool does not have a delete or remove option. 
 
 [source,shell]
 ----
-rm -rf /home/nick/.ansible/collections/ansible_collections/mynamespace
+rm -rf /home/nick/.ansible/collections/ansible_collections/mynamespace/mycode/
+rmdir /home/nick/.ansible/collections/ansible_collections/mynamespace/
 ----
 
-== import a new version
+== creat a new collection version
+
+
+[source,shell]
+----
+----
+
+
+== import the new version
 
 Create a new version of the archive.
 
