@@ -47,7 +47,7 @@ password=Password;1
 
 Create namespace in hub
 
-my_namespace
+mynamespace
 
 has to be done manually in web UI
 
@@ -103,26 +103,25 @@ The command _ansible-galaxy collection init_  creates everything required for a 
 
 [source,shell]
 ----
-[nick@dev my_collection]$ pwd
-/home/nick/ansible/collections/ansible_collections/my_namespace/my_collection
-[nick@dev my_collection]$ ls
+[nick@dev ~]$ cd /home/nick/my-ansible/collections/ansible_collections/mynamespace/mycode
+[nick@dev mycode]$ ls
 docs  galaxy.yml  meta  playbooks  plugins  README.md  roles  tests
-[nick@dev my_collection]$ 
+[nick@dev mycode]$ 
 ----
 
 The _galaxy.yml_ file specifies the name, version and other details. 
 
 [source,shell]
 ----
-[nick@dev my_collection]$ cat galaxy.yml 
+[nick@dev mycode]$ cat galaxy.yml 
 ### REQUIRED
 # The namespace of the collection. This can be a company/brand/organization or product namespace under which all
 # content lives. May only contain alphanumeric lowercase characters and underscores. Namespaces cannot start with
 # underscores or numbers and cannot contain consecutive underscores
-namespace: my_namespace
+namespace: mynamespace
 
 # The name of the collection. Has the same character restrictions as 'namespace'
-name: my_collection
+name: mycode
 
 # The version of the collection. Must be compatible with semantic versioning
 version: 1.0.0
@@ -134,29 +133,164 @@ The _ansible-galaxy collection build_ command uses the content of galaxy.yml to 
 
 [source,shell]
 ----
-[nick@dev my_collection]$ ansible-galaxy collection build
-Created collection for my_namespace.my_collection at /home/nick/ansible/collections/ansible_collections/my_namespace/my_collection/my_namespace-my_collection-1.0.0.tar.gz
-[nick@dev my_collection]$ 
+[nick@dev mycode]$ cd /home/nick/my-ansible/collections/ansible_collections/
+[nick@dev ansible_collections]$ ansible-galaxy collection build mynamespace/mycode
+Created collection for mynamespace.mycode at /home/nick/my-ansible/collections/ansible_collections/mynamespace-mycode-1.0.0.tar.gz
+[nick@dev ansible_collections]$ ls -l
+total 8
+drwxr-xr-x. 3 nick nick   20 Jan  6 21:26 mynamespace
+-rw-r--r--. 1 nick nick 4890 Jan  8 19:38 mynamespace-mycode-1.0.0.tar.gz
+[nick@dev ansible_collections]$ 
 ----
 
 
-== copy to (import)
 
-ansible-galaxy collection publish awx-awx-21.6.0.tar.gz 
+== get a Private Automation Hub API Token
 
+Authorizes ansible-galaxy to make changes using the PAH API.
+
+Get a new token.
+https://aaphub.build.example.com/ui/token/
+
+Load token.
+
+
+Copy token.
+[source,shell]
+----
+PAH_API_TOKEN=d958f185c374feccd008781a5ebb0e2aac191b51
+----
+
+== create the namespace
+
+Use the web UI. 
+
+Create a new namespace. 
+https://aaphub.build.example.com/ui/namespaces/
+
+
+== copy archive to PAH
+
+Use the CLI. 
+
+Publish.
+
+[source,shell]
+----
+[nick@dev satellite]$ ansible-galaxy collection publish  mynamespace-mycode-1.0.0.tar.gz --token  $PAH_API_TOKEN --server https://aaphub.build.example.com/api/galaxy
+Publishing collection artifact '/home/nick/ansible/playbook/satellite/mynamespace-mycode-1.0.0.tar.gz' to cmd_arg https://aaphub.build.example.com/api/galaxy
+Collection has been published to the Galaxy server cmd_arg https://aaphub.build.example.com/api/galaxy
+Waiting until Galaxy import task https://aaphub.build.example.com/api/galaxy/v3/imports/collections/7586f830-74f6-4bc3-942e-41141ef9c146/ has completed
+[WARNING]: Galaxy import warning message: No changelog found. Add a CHANGELOG.rst, CHANGELOG.md, or changelogs/changelog.yaml
+file.
+[WARNING]: Galaxy import warning message: playbooks/test.yml:7:7: syntax-check[specific]: the role
+'mynamespace.mycode.my_role' was not found in
+/tmp/tmp87dx6er6/ansible_collections/mynamespace/mycode/playbooks/roles:/var/lib/pulp/.cache/ansible-compat/15c66d/roles:/tmp
+/tmp87dx6er6/ansible_collections/mynamespace/mycode/roles:/var/lib/pulp/.ansible/roles:/usr/share/ansible/roles:/etc/ansible/
+roles:/tmp/tmp87dx6er6/ansible_collections/mynamespace/mycode/playbooks
+[WARNING]: Galaxy import warning message: Ignore files skip ansible-test sanity tests, found ignore-2.14.txt with 2
+statement(s)
+Collection has been successfully published and imported to the Galaxy server cmd_arg https://aaphub.build.example.com/api/galaxy
+[nick@dev satellite]$ 
+----
+
+Check the web UI. 
+No collection shows up in the namespace. 
+https://aaphub.build.example.com/ui/namespaces/mynamespace/?tab=collections
+
+
+== copy gotchas
+
+Without --server, ansible-galaxy tries to contact https://galaxy.ansible.com/api/.
+It doesn't know about the proxy and times out. 
+
+[source,shell]
+----
+[nick@dev ~]$ ansible-galaxy collection publish awx-awx-21.6.0.tar.gz 
+...
+ERROR! Unknown error when attempting to call Galaxy at 'https://galaxy.ansible.com/api/': <urlopen error [Errno 101] Network is unreachable>. <urlopen error [Errno 101] Network is unreachable>
+[nick@dev ~]$ 
+----
+
+If you don't create the namespace, ansible-galaxy displays error _Namespace in filename not found_. 
+
+[source,shell]
+----
+[nick@dev satellite]$ ansible-galaxy collection publish  mynamespace-mycode-1.0.0.tar.gz --token  d958f185c374feccd008781a5ebb0e2aac191b51 --server https://aaphub.build.example.com/api/galaxy
+Publishing collection artifact '/home/nick/ansible/playbook/satellite/mynamespace-mycode-1.0.0.tar.gz' to cmd_arg https://aaphub.build.example.com/api/galaxy
+ERROR! Error when publishing collection to cmd_arg (https://aaphub.build.example.com/api/galaxy) (HTTP Code: 404, Message: Namespace in filename not found. Code: not_found)
+[nick@dev satellite]$ 
+----
+
+
+== approve
+
+use the web UI. 
+
+Check the approval dashboard.
+https://aaphub.build.example.com/ui/approval-dashboard/
+
+Check the import log.
+https://aaphub.build.example.com/ui/repo/staging/mynamespace/mycode/import-log/?version=1.0.0
+
+----
+Importing with galaxy-importer 0.4.13 
+Getting doc strings via ansible-doc 
+Finding content inside collection 
+Loading role my_role 
+No changelog found. Add a CHANGELOG.rst, CHANGELOG.md, or changelogs/changelog.yaml file. 
+Linting collection via ansible-lint... 
+playbooks/test.yml:7:7: syntax-check[specific]: the role 'mynamespace.mycode.my_role' was not found in /tmp/tmp87dx6er6/ansible_collections/mynamespace/mycode/playbooks/roles:/var/lib/pulp/.cache/ansible-compat/15c66d/roles:/tmp/tmp87dx6er6/ansible_collections/mynamespace/mycode/roles:/var/lib/pulp/.ansible/roles:/usr/share/ansible/roles:/etc/ansible/roles:/tmp/tmp87dx6er6/ansible_collections/mynamespace/mycode/playbooks 
+...ansible-lint run complete 
+Ignore files skip ansible-test sanity tests, found ignore-2.14.txt with 2 statement(s) 
+Collection loading complete 
+
+Done
+----
+
+Approve. 
+https://aaphub.build.example.com/ui/approval-dashboard/
+Message appears. 
+Certification status for collection "mynamespace mycode v1.0.0" has been successfully updated.
+
+
+== check
+
+Download the collection. 
+You don't need an _ansible.cfg_ file if you use the _--token_ and _--server_ options. 
+
+[source,shell]
+----
+[nick@dev ~]$ ansible-galaxy collection install mynamespace.mycode --token  d958f185c374feccd008781a5ebb0e2aac191b51   --server https://aaphub.build.example.com/api/galaxy
+Starting galaxy collection install process
+Process install dependency map
+Starting collection install process
+Downloading https://aaphub.build.example.com/api/galaxy/v3/plugin/ansible/content/published/collections/artifacts/mynamespace-mycode-1.0.0.tar.gz to /home/nick/.ansible/tmp/ansible-local-49928ctvwfwvy/tmp3vpzg0m_/mynamespace-mycode-1.0.0-r19n2n5b
+Installing 'mynamespace.mycode:1.0.0' to '/home/nick/.ansible/collections/ansible_collections/mynamespace/mycode'
+mynamespace.mycode:1.0.0 was installed successfully
+[nick@dev ~]$ 
+----
+
+Clean up. 
+Delete the downloaded collection.
+The _ansible-galaxy_ tool does not have a delete or remove option. 
+
+[source,shell]
+----
+rm -rf /home/nick/.ansible/collections/ansible_collections/mynamespace
+----
+
+== import a new version
+
+Create a new version of the archive.
 
 [source,shell]
 ----
 ----
 
-[source,shell]
-----
-----
+Copy from the CLI to PAH.
 
 [source,shell]
 ----
 ----
 
-[source,shell]
-----
-----
