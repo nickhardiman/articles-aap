@@ -1,4 +1,4 @@
-= upload a collection to PAH
+= add a collection to PAH
 Nick Hardiman 
 :source-highlighter: highlight.js
 :revdate: 14-12-2023
@@ -279,9 +279,19 @@ https://aaphub.build.example.com/ui/repo/published/mynamespace/mycode/content/ro
 The role README.md appears. 
 It's boilerplate. 
 
+== look around the API
+
 Look at the list of collections in the API page. 
 https://aaphub.build.example.com/api/galaxy/pulp/api/v3/ansible/collections/
 
+If you don't log in first, you get this error.
+----
+    "detail": "Authentication credentials were not provided.
+----
+If you are a regular user with no admin rights, you get this error. 
+----
+    "detail": "You do not have permission to perform this action."
+----
 
 == install the collection
 

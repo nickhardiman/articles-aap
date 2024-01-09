@@ -1,0 +1,79 @@
+= update a collection in PAH
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 14-12-2023
+
+
+
+ 
+
+
+
+== get a Private Automation Hub API Token
+
+Authorizes ansible-galaxy to make changes using the PAH API.
+
+Get a new token.
+https://aaphub.build.example.com/ui/token/
+
+Load token.
+
+
+Copy token.
+[source,shell]
+----
+PAH_API_TOKEN=d958f185c374feccd008781a5ebb0e2aac191b51
+----
+
+
+== creat a new collection version
+
+
+[source,shell]
+----
+----
+
+
+[source,shell]
+----
+[nick@dev ~]$ cd /home/nick/my-ansible/collections/ansible_collections/mynamespace/mycode
+[nick@dev mycode]$ ls
+docs  galaxy.yml  meta  playbooks  plugins  README.md  roles  tests
+[nick@dev mycode]$ 
+----
+
+== create a tarball
+
+Build an Ansible collection artifact that can be published to Ansible Galaxy.
+
+The command _ansible-galaxy collection init_  creates everything required for a new collection, including the galaxy.yml file. 
+
+
+The _ansible-galaxy collection build_ command uses the content of galaxy.yml to archive all the files. 
+
+[source,shell]
+----
+[nick@dev mycode]$ cd /home/nick/my-ansible/collections/ansible_collections/
+[nick@dev ansible_collections]$ ansible-galaxy collection build mynamespace/mycode
+Created collection for mynamespace.mycode at /home/nick/my-ansible/collections/ansible_collections/mynamespace-mycode-1.0.0.tar.gz
+[nick@dev ansible_collections]$ ls -l
+total 8
+drwxr-xr-x. 3 nick nick   20 Jan  6 21:26 mynamespace
+-rw-r--r--. 1 nick nick 4890 Jan  8 19:38 mynamespace-mycode-1.0.0.tar.gz
+[nick@dev ansible_collections]$ 
+----
+
+== import the new version
+
+Create a new version of the archive.
+
+[source,shell]
+----
+----
+
+Copy from the CLI to PAH.
+
+[source,shell]
+----
+----
+
