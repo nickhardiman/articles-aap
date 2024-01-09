@@ -31,16 +31,264 @@ PAH_API_TOKEN=d958f185c374feccd008781a5ebb0e2aac191b51
 
 [source,shell]
 ----
-----
-
-
-[source,shell]
-----
 [nick@dev ~]$ cd /home/nick/my-ansible/collections/ansible_collections/mynamespace/mycode
 [nick@dev mycode]$ ls
 docs  galaxy.yml  meta  playbooks  plugins  README.md  roles  tests
 [nick@dev mycode]$ 
 ----
+
+== generate a changelog
+
+https://docs.ansible.com/ansible/latest/dev_guide/developing_collections_changelogs.html
+
+Add a change log. 
+
+
+[source,shell]
+----
+(venv-ansible) [nick@dev ~]$ source ~/lab-build-proxy.sh 
+(venv-ansible) [nick@dev ~]$ 
+----
+
+[source,shell]
+----
+(venv-ansible) [nick@dev ~]$ pip install antsibull-changelog
+Collecting antsibull-changelog
+...
+Successfully installed annotated-types-0.6.0 antsibull-changelog-0.23.0 colorama-0.4.6 docutils-0.20.1 pydantic-2.5.3 pydantic-core-2.14.6 rstcheck-6.2.0 rstcheck-core-1.2.0 semantic-version-2.10.0 shellingham-1.5.4 typer-0.9.0
+...
+(venv-ansible) [nick@dev ~]$ 
+----
+
+
+[source,shell]
+----
+(venv-ansible) [nick@dev ~]$ antsibull-changelog init /home/nick/my-ansible/collections/ansible_collections/mynamespace/mycode/
+Created fragments directory "/home/nick/my-ansible/collections/ansible_collections/mynamespace/mycode/changelogs/fragments"
+Created config file "/home/nick/my-ansible/collections/ansible_collections/mynamespace/mycode/changelogs/config.yaml"
+(venv-ansible) [nick@dev ~]$ 
+----
+
+View the config file. 
+
+[source,shell]
+----
+(venv-ansible) [nick@dev ~]$ cat /home/nick/my-ansible/collections/ansible_collections/mynamespace/mycode/changelogs/config.yaml
+changelog_filename_template: ../CHANGELOG.rst
+changelog_filename_version_depth: 0
+changes_file: changelog.yaml
+changes_format: combined
+ignore_other_fragment_extensions: true
+keep_fragments: false
+mention_ancestor: true
+new_plugins_after_name: removed_features
+notesdir: fragments
+prelude_section_name: release_summary
+prelude_section_title: Release Summary
+sanitize_changelog: true
+sections:
+- - major_changes
+  - Major Changes
+- - minor_changes
+  - Minor Changes
+- - breaking_changes
+  - Breaking Changes / Porting Guide
+- - deprecated_features
+  - Deprecated Features
+- - removed_features
+  - Removed Features (previously deprecated)
+- - security_fixes
+  - Security Fixes
+- - bugfixes
+  - Bugfixes
+- - known_issues
+  - Known Issues
+title: Mynamespace.Mycode
+trivial_section_name: trivial
+use_fqcn: true
+(venv-ansible) [nick@dev ~]$ 
+----
+
+Lint
+
+[source,shell]
+----
+(venv-ansible) [nick@dev ~]$ cd  /home/nick/my-ansible/collections/ansible_collections/mynamespace/mycode/
+(venv-ansible) [nick@dev mycode]$ 
+(venv-ansible) [nick@dev mycode]$ antsibull-changelog lint
+(venv-ansible) [nick@dev mycode]$ 
+----
+
+https://github.com/ansible-community/antsibull-changelog/blob/main/docs/changelog.yaml-format.md
+
+No details
+
+Create changelogs/changelog.yaml
+
+[source,shell]
+----
+(venv-ansible) [nick@dev mycode]$ cat  changelogs/fragments/1.0.0.yml
+release_summary: My initial release.
+known_issues:
+  - my_role is a bit dumb.
+
+(venv-ansible) [nick@dev mycode]$ 
+----
+
+[source,shell]
+----
+(venv-ansible) [nick@dev mycode]$ antsibull-changelog release
+(venv-ansible) [nick@dev mycode]$ 
+----
+
+New file 
+
+[source,shell]
+----
+(venv-ansible) [nick@dev mycode]$ cat changelogs/changelog.yaml 
+ancestor: null
+releases:
+  1.0.0:
+    changes:
+      known_issues:
+      - my_role is a bit dumb.
+      release_summary: My initial release.
+    fragments:
+    - 1.0.0.yml
+    release_date: '2024-01-09'
+(venv-ansible) [nick@dev mycode]$ 
+----
+
+New file
+
+[source,shell]
+----
+(venv-ansible) [nick@dev mycode]$ cat CHANGELOG.rst 
+================================
+Mynamespace.Mycode Release Notes
+================================
+
+.. contents:: Topics
+
+
+v1.0.0
+======
+
+Release Summary
+---------------
+
+My initial release.
+
+Known Issues
+------------
+
+- my_role is a bit dumb.
+(venv-ansible) [nick@dev mycode]$ 
+----
+
+== make changes
+
+Update the collection README. 
+
+[source,shell]
+----
+echo "
+Four edited files. One role, one test playbook, a couple READMEs. 
+That's literally it.
+" >> ./README.md
+----
+
+Update the role README. 
+
+[source,shell]
+----
+echo '
+my_role
+=======
+
+Says hello.
+' > roles/my_role/README.md
+----
+
+Update the version number. 
+
+[source,shell]
+----
+(venv-ansible) [nick@dev mycode]$ vim galaxy.yml 
+----
+
+[source,shell]
+----
+version: 1.0.1
+----
+
+Add another change fragment. 
+
+[source,shell]
+----
+echo 'release_summary: Lovely bit of documentation.' > changelogs/fragments/1.0.1.yml
+----
+
+
+[source,shell]
+----
+(venv-ansible) [nick@dev mycode]$ cat changelogs/changelog.yaml 
+ancestor: null
+releases:
+  1.0.0:
+    changes:
+      known_issues:
+      - my_role is a bit dumb.
+      release_summary: My initial release.
+    fragments:
+    - 1.0.0.yml
+    release_date: '2024-01-09'
+  1.0.1:
+    changes:
+      release_summary: Lovely bit of documentation.
+    fragments:
+    - 1.0.1.yml
+    release_date: '2024-01-09'
+(venv-ansible) [nick@dev mycode]$ 
+----
+
+
+
+[source,shell]
+----
+(venv-ansible) [nick@dev mycode]$ cat CHANGELOG.rst 
+================================
+Mynamespace.Mycode Release Notes
+================================
+
+.. contents:: Topics
+
+
+v1.0.1
+======
+
+Release Summary
+---------------
+
+Lovely bit of documentation.
+
+v1.0.0
+======
+
+Release Summary
+---------------
+
+My initial release.
+
+Known Issues
+------------
+
+- my_role is a bit dumb.
+(venv-ansible) [nick@dev mycode]$ 
+----
+
+
+
 
 == create a tarball
 
@@ -53,27 +301,78 @@ The _ansible-galaxy collection build_ command uses the content of galaxy.yml to 
 
 [source,shell]
 ----
-[nick@dev mycode]$ cd /home/nick/my-ansible/collections/ansible_collections/
-[nick@dev ansible_collections]$ ansible-galaxy collection build mynamespace/mycode
-Created collection for mynamespace.mycode at /home/nick/my-ansible/collections/ansible_collections/mynamespace-mycode-1.0.0.tar.gz
-[nick@dev ansible_collections]$ ls -l
-total 8
-drwxr-xr-x. 3 nick nick   20 Jan  6 21:26 mynamespace
--rw-r--r--. 1 nick nick 4890 Jan  8 19:38 mynamespace-mycode-1.0.0.tar.gz
-[nick@dev ansible_collections]$ 
+(venv-ansible) [nick@dev ~]$ ansible-galaxy collection build /home/nick/my-ansible/collections/ansible_collections/mynamespace/mycode
+Created collection for mynamespace.mycode at /home/nick/mynamespace-mycode-1.0.1.tar.gz
+(venv-ansible) [nick@dev ~]$ 
 ----
 
 == import the new version
-
-Create a new version of the archive.
-
-[source,shell]
-----
-----
 
 Copy from the CLI to PAH.
 
 [source,shell]
 ----
+(venv-ansible) [nick@dev ~]$ ansible-galaxy collection publish ./mynamespace-mycode-1.0.1.tar.gz  \
+  --token  d958f185c374feccd008781a5ebb0e2aac191b51 \
+  --server https://aaphub.build.example.com/api/galaxy
+Publishing collection artifact '/home/nick/mynamespace-mycode-1.0.1.tar.gz' to cmd_arg https://aaphub.build.example.com/api/galaxy
+Collection has been published to the Galaxy server cmd_arg https://aaphub.build.example.com/api/galaxy
+Waiting until Galaxy import task https://aaphub.build.example.com/api/galaxy/v3/imports/collections/e3ce7ecf-feb3-4e6b-9605-1c210e591714/ has completed
+[WARNING]: Galaxy import warning message: playbooks/test.yml:7:7: syntax-check[specific]: the role
+'mynamespace.mycode.my_role' was not found in
+/tmp/tmpmpvm2nla/ansible_collections/mynamespace/mycode/playbooks/roles:/var/lib/pulp/.cache/ansible-compat/
+15c66d/roles:/tmp/tmpmpvm2nla/ansible_collections/mynamespace/mycode/roles:/var/lib/pulp/.ansible/roles:/usr
+/share/ansible/roles:/etc/ansible/roles:/tmp/tmpmpvm2nla/ansible_collections/mynamespace/mycode/playbooks
+[WARNING]: Galaxy import warning message: Ignore files skip ansible-test sanity tests, found ignore-2.14.txt
+with 2 statement(s)
+Collection has been successfully published and imported to the Galaxy server cmd_arg https://aaphub.build.example.com/api/galaxy
+(venv-ansible) [nick@dev ~]$ 
 ----
+
+
+== publish in the web UI
+
+View approvals list
+https://aaphub.build.example.com/ui/approval-dashboard/
+
+View import log
+https://aaphub.build.example.com/ui/my-imports/?namespace=mynamespace&name=mycode&version=1.0.1
+
+[source,shell]
+----
+Importing with galaxy-importer 0.4.13 
+Getting doc strings via ansible-doc 
+Finding content inside collection 
+Loading role my_role 
+Linting collection via ansible-lint... 
+playbooks/test.yml:7:7: syntax-check[specific]: the role 'mynamespace.mycode.my_role' was not found in /tmp/tmpmpvm2nla/ansible_collections/mynamespace/mycode/playbooks/roles:/var/lib/pulp/.cache/ansible-compat/15c66d/roles:/tmp/tmpmpvm2nla/ansible_collections/mynamespace/mycode/roles:/var/lib/pulp/.ansible/roles:/usr/share/ansible/roles:/etc/ansible/roles:/tmp/tmpmpvm2nla/ansible_collections/mynamespace/mycode/playbooks 
+...ansible-lint run complete 
+Ignore files skip ansible-test sanity tests, found ignore-2.14.txt with 2 statement(s) 
+Collection loading complete 
+
+Done
+----
+
+Approve.
+
+
+== check in the web UI
+
+Check the namespace
+https://aaphub.build.example.com/ui/namespaces/mynamespace/
+Only mycode v1.0.1 is displayed. 
+
+Check the collection.
+https://aaphub.build.example.com/ui/repo/published/mynamespace/mycode/
+Both versions are listed in the Version drop-down menu. 
+
+Check the collection documentation. 
+https://aaphub.build.example.com/ui/repo/published/mynamespace/mycode/docs/
+
+Check the role documentation.
+https://aaphub.build.example.com/ui/repo/published/mynamespace/mycode/content/role/my_role/
+
+The changelog is not available. 
+
+
 

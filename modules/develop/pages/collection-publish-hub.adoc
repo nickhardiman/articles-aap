@@ -220,7 +220,10 @@ If you don't create the namespace, ansible-galaxy displays error _Namespace in f
 
 [source,shell]
 ----
-[nick@dev satellite]$ ansible-galaxy collection publish  mynamespace-mycode-1.0.0.tar.gz --token  d958f185c374feccd008781a5ebb0e2aac191b51 --server https://aaphub.build.example.com/api/galaxy
+[nick@dev satellite]$ ansible-galaxy collection publish  \
+  mynamespace-mycode-1.0.0.tar.gz \
+  --token  d958f185c374feccd008781a5ebb0e2aac191b51 \
+  --server https://aaphub.build.example.com/api/galaxy
 Publishing collection artifact '/home/nick/ansible/playbook/satellite/mynamespace-mycode-1.0.0.tar.gz' to cmd_arg https://aaphub.build.example.com/api/galaxy
 ERROR! Error when publishing collection to cmd_arg (https://aaphub.build.example.com/api/galaxy) (HTTP Code: 404, Message: Namespace in filename not found. Code: not_found)
 [nick@dev satellite]$ 
@@ -334,25 +337,4 @@ rm -rf /home/nick/.ansible/collections/ansible_collections/mynamespace/mycode/
 rmdir /home/nick/.ansible/collections/ansible_collections/mynamespace/
 ----
 
-== creat a new collection version
-
-
-[source,shell]
-----
-----
-
-
-== import the new version
-
-Create a new version of the archive.
-
-[source,shell]
-----
-----
-
-Copy from the CLI to PAH.
-
-[source,shell]
-----
-----
 
