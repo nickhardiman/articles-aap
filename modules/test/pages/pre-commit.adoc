@@ -1,4 +1,4 @@
-= git pre-commit
+= use git pre-commit to run ansible-lint
 Nick Hardiman <nhardima@redhat.com>
 :source-highlighter: highlight.js
 :toc:
