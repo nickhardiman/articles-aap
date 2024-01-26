@@ -1,11 +1,21 @@
-= develop
+= develop playbooks, collections and containers
 Nick Hardiman 
 :source-highlighter: highlight.js
 :revdate: 24-11-2023
 
+Use public and private Ansible content collections to speed up playbook writing. 
+
+Use a container to a playbook.
+
+Write a content collection. 
+Store it in Github, in Private Automation Hub, or in a custom container.
+
+Build a custom container. 
+
+todo 
 
 * playbook
 * role
-* collection
-* filter
-* module
+* plugin filter
+* plugin lookup
+* plugin module
