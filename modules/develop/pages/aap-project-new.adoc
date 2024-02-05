@@ -1,0 +1,15 @@
+= create an AAP project
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 19-12-2023
+
+
+
+== troubleshoot
+
+project update-job verbosity
+https://stackoverflow.com/questions/66152842/awx-fails-to-retrieve-collections-from-ansible-galaxy
+[source,shell]
+----
+"PROJECT_UPDATE_VVV": true,
+----

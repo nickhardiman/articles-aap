@@ -1,0 +1,17 @@
+= Hashicorp Terraform
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 05-02-2024
+
+
+== links
+
+https://developer.hashicorp.com/terraform/tutorials/certification-003
+
+https://portal.cloud.hashicorp.com/sign-in
+
+https://developer.hashicorp.com/terraform/tutorials/azure-get-started/install-cli
+
+https://www.ansible.com/blog/providing-terraform-with-that-ansible-magic
+
+https://github.com/collabnix/terraform/tree/master/beginners/os/linux

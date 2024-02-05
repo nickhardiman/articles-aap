@@ -1,0 +1,13 @@
+= awx-manage
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 05-02-2024
+
+https://docs.ansible.com/automation-controller/latest/html/administration/tipsandtricks.html#
+
+[source,shell]
+----
+awx-manage createsuperuser
+awx-manage inventory_import --source=inventory --inventory-name="My Controller Inventory"
+...
+----

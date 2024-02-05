@@ -4,7 +4,11 @@ Nick Hardiman
 :revdate: 02-02-2024
 
 
+== links
+
 https://access.redhat.com/articles/6999546
 Red Hat Ansible Automation Platform - HashiCorp Vault Signed SSH Credentials
 
 https://developer.hashicorp.com/vault/install
+
+https://developer.hashicorp.com/vault/tutorials/getting-started/getting-started-install

@@ -6,3 +6,4 @@
 ** xref:dtap-development-test-acceptance-production.adoc[]
 ** xref:upgrade.adoc[]
 ** xref:cli-automation-cotroller-service.adoc[]
+** xref:awx-manage.adoc[]

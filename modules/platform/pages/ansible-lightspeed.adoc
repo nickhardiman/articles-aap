@@ -1,0 +1,15 @@
+= Ansible Lightspeed
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 05-02-2024
+
+
+== links 
+
+https://developers.redhat.com/products/ansible/lightspeed
+
+https://www.redhat.com/en/blog/getting-started-red-hat-ansible-lightspeed-ibm-watsonx-code-assistant
+
+[source,shell]
+....
+....

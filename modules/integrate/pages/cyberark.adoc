@@ -4,14 +4,76 @@ Nick Hardiman <nhardima@redhat.com>
 :revdate: 10-12-2023
 
 
+== apps
+
 * EPV (Enterprise Password Vault)
 * AAM (Application Access Manager)
 * AAM Central Credential Provider
 
+https://github.com/cyberark/ansible-security-automation-collection/blob/master/docs/cyberark_credential.md
+
+== todo - AAM Xperience Workshop
+
+https://github.com/sheeshkebab/blog-data/tree/master/conjur
+
+
+== links
+
+https://www.conjur.org/get-started/
+
+https://www.ansible.com/blog/simplifying-secrets-management-with-cyberark-and-red-hat-ansible-automation-platform
+
+installation of CyberArk Conjur Open Source using Docker Compose.
+https://github.com/cyberark/conjur-quickstart
 
 https://github.com/cyberark/ansible-security-automation-collection/blob/master/docs/cyberark_credential.md
 
+https://hub.docker.com/r/cyberark/conjur-cli
 
+Confused about how to network rootless and rootfull pods with Podman? Read on.
+https://www.redhat.com/sysadmin/container-networking-podman
+
+https://dev.to/pr0pm/run-postgresql-pgadmin-in-pods-using-podman-386o
+
+=== tutorials 
+
+https://www.conjur.org/get-started/tutorials/
+
+following these instructions
+https://github.com/sheeshkebab/blog-data/tree/master/conjur#securing-the-environment
+
+
+
+=== ansible roles and collections 
+
+not much
+
+https://github.com/cyberark/ansible-security-automation-collection
+
+Modules
+
+.  cyberark_authentication
+.  cyberark_user
+.  cyberark_account
+.  cyberark_credential
+
+Roles
+
+.  aimprovider
+
+https://github.com/infamousjoeg?tab=repositories&q=ansible&type=&language=&sort=
+https://github.com/infamousjoeg/deploy-conjur-oss
+x https://github.com/infamousjoeg/conjur-oss-deploy
+https://github.com/infamousjoeg/conjur-ansible-framework/blob/master/README.md
+
+https://docs.ansible.com/ansible/latest/collections/cyberark/conjur/index.html
+
+lookup plugins 
+
+. conjur_variable lookup
+
+
+== install CyberArk Conjur OSS in a pod on RHEL 9
 
 I followed this quick-start guide. 
 https://www.conjur.org/get-started/
@@ -57,7 +119,7 @@ Add an SSH tunnel to use PGadmin.
 
 Install podman. 
 
-Clone Cypberark's quickstart repo. 
+Clone Cyberark's quickstart repo. 
 
 [source,shell]
 ----
@@ -702,9 +764,4 @@ a700b289df62  docker.io/library/postgres:10.16                 postgres         
 967be9775594  docker.io/cyberark/conjur-cli:8                  infinity              About an hour ago  Exited (137) 45 seconds ago                          conjur_client
 [nick@secret conjur-quickstart]$ 
 ----
-
-
-== todo - AAM Xperience Workshop
-
-https://github.com/sheeshkebab/blog-data/tree/master/conjur
 

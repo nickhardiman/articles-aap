@@ -49,6 +49,7 @@ something to do with servicenow client auth
 need to an application in AAP
 
 https://docs.servicenow.com/bundle/utah-integrate-applications/page/administer/integrationhub-store-spokes/concept/ansible-spoke.html
+
 https://docs.ansible.com/automation-controller/latest/html/userguide/applications_auth.html
 https://cloudautomation.pharriso.co.uk/post/aap_snow_spoke/
 

@@ -10,6 +10,7 @@
 ** xref:gitlab-token-new.adoc[]
 ** xref:gitlab-group-new.adoc[]
 ** xref:gitlab-project-new.adoc[]
+** xref:aap-project-new.adoc[]
 ** xref:collection-from-gitlab.adoc[]
 ** xref:collection-to-gitlab.adoc[]
 ** xref:collection-new.adoc[]

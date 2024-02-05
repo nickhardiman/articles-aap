@@ -1,0 +1,137 @@
+= metrics monitoring with Prometheus
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 05-02-2024
+
+
+== links
+
+https://o11y.eu/blog/prometheus-server-tls/
+
+https://www.ansible.com/blog/red-hat-ansible-tower-monitoring-using-prometheus-node-exporter-grafana
+
+
+prometheus time-series DB and tools 
+https://prometheus.io/
+
+prometheus is written in Go.
+https://github.com/prometheus/prometheus
+
+playbook
+https://github.com/nickhardiman/ansible-playbook-supply/blob/main/roles-monitor.yml
+
+my role
+https://github.com/nickhardiman/ansible-collection-app/tree/main/roles/install_prometheus
+
+another better role, now abandoned
+https://github.com/cloudalchemy/ansible-prometheus
+replaced by 
+https://github.com/prometheus-community/ansible
+
+Installing Prometheus - community discussion
+https://access.redhat.com/discussions/6638021
+
+* community support  https://prometheus.io/community/
+* Step by step instructions  
+  https://prometheus.io/docs/prometheus/latest/getting_started/
+* docker images  https://hub.docker.com/u/prom
+* training  https://training.promlabs.com/
+
+https://janakiev.com/blog/prometheus-setup-systemd/
+
+https://ariq.nauf.al/blog/prometheus-running-on-different-port/
+
+
+
+== home lab
+
+[source,shell]
+----
+# VM on host.supply.example.com
+192.168.15.8        monitor.supply.example.com   monitorsupply
+----
+
+
+== install 
+
+I wrote my own ansible install role for prometheus 
+https://github.com/nickhardiman/ansible-collection-app/tree/main/roles/prometheus
+possibly a dumb waste of time 
+
+next time, try
+https://github.com/prometheus-community/ansible/tree/main
+although their docs are useless.
+https://prometheus-community.github.io/ansible/branch/main/
+
+https://computingforgeeks.com/how-to-install-prometheus-on-rhel-8/
+
+https://www.google.com/search?q=rhel+install+Prometheus+and+Grafana
+
+install Grafana and Prometheus in your Host/Main monitor server and 
+install node_exporter in other server 
+https://blog.devops4me.com/install-grafana-prometheus-node_exporter-using-ansible/
+
+!!! archived, replaced by 
+https://github.com/cloudalchemy/ansible-prometheus
+downloads binaries from
+https://prometheus.io/download/
+
+
+== ansible install role for prometheus 
+
+https://www.ansible.com/blog/red-hat-ansible-tower-monitoring-using-prometheus-node-exporter-grafana
+
+https://www.padok.fr/en/blog/prometheus-monitoring-ansible
+
+!!! deprecated
+https://github.com/cloudalchemy/ansible-prometheus
+try
+https://github.com/prometheus-community/ansible/blob/main/roles/prometheus/tasks/install.yml
+
+example playbook from 
+https://github.com/prometheus-community/ansible/tree/main/roles/prometheus
+
+[source,yaml]
+----
+---
+- hosts: all
+  roles:
+  - prometheus.prometheus.prometheus
+  vars:
+    prometheus_targets:
+      node:
+      - targets:
+        - localhost:9100
+        - node.demo.do.prometheus.io
+        labels:
+          env: demosite
+----
+
+
+== configure 
+
+integrate with AAP2
+
+old article around AAP1 
+https://www.ansible.com/blog/red-hat-ansible-tower-monitoring-using-prometheus-node-exporter-grafana
+
+https://github.com/redhat-cop/tower_grafana_dashboards
+
+AAP2 Usability Analytics and Data Collection
+https://docs.ansible.com/automation-controller/latest/html/administration/usability_data_collection.html
+
+
+== run 
+
+[source,shell]
+----
+/usr/local/bin/prometheus \
+  --config.file=/etc/prometheus/prometheus.yml \
+  --storage.tsdb.path=/var/lib/prometheus \
+  --storage.tsdb.retention.time=30d \
+  --web.config.file=/etc/prometheus/web.yml \
+  --web.console.libraries=/etc/prometheus/console_libraries \
+  --web.console.templates=/etc/prometheus/consoles \
+  --web.listen-address=0.0.0.0:9091
+----
+

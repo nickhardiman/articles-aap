@@ -1,0 +1,9 @@
+= VMware
+Nick Hardiman <nhardima@redhat.com>
+:source-highlighter: highlight.js
+:revdate: 05-02-2024
+
+== links 
+
+install 
+https://www.nakivo.com/blog/install-esxi-hyper-v/
