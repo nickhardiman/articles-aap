@@ -1,0 +1,21 @@
+= stop and start controller
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 14-12-2023
+
+
+automation-controller-service
+
+https://docs.ansible.com/automation-controller/latest/html/administration/init_script.html
+
+[source,shell]
+----
+automation-controller-service restart
+----
+
+
+[source,shell]
+----
+systemctl restart automation-controller
+----
+

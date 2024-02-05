@@ -1,7 +1,11 @@
 * xref:index.adoc[]
 ** xref:servicenow.adoc[]
+** xref:servicenow-ansible.adoc[]
 ** xref:ms-wsl.adoc[]
 ** xref:azure-entra-id.adoc[]
 ** xref:azure-key-vault.adoc[]
 ** xref:cyberark.adoc[]
+** xref:github-actions.adoc[]
+** xref:hashicorp-vault.adoc[]
+** xref:steampunk-spotter.adoc[]
 

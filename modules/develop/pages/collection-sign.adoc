@@ -1,0 +1,31 @@
+= sign a collection 
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 03-02-2024
+
+== links
+
+https://access.redhat.com/documentation/en-us/red_hat_ansible_automation_platform/2.4/html-single/managing_content_in_automation_hub/index#assembly-collections-and-content-signing-in-pah
+
+https://www.ansible.com/blog/digitally-signing-ansible-content-collections-using-private-automation-hub
+
+install signing service
+
+signature public key
+
+pgp public key block
+
+hub menu > signature keys 
+
+secure supply chain 
+
+sign a collection
+
+https://access.redhat.com/documentation/en-us/red_hat_ansible_automation_platform/2.2/html-single/red_hat_ansible_automation_platform_installation_guide/index#ref-hub-variables
+
+* automation_hub_collection_signing_service_key
+* automation_hub_collection_signing_service_script
+
+sign an EE container
+
+

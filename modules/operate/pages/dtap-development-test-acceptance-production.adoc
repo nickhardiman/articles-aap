@@ -6,8 +6,10 @@ Nick Hardiman <nhardima@redhat.com>
 
 == links
 
-DaC (Deployment as Code)  - Is this a thing?
+DTAP 
+https://en.wikipedia.org/wiki/Development,_testing,_acceptance_and_production
 
+DaC (Deployment as Code)  - Is this a thing?
 https://www.ansible.com/blog/automation-controller-workflow-deployment-as-code
 
 

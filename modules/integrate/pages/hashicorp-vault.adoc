@@ -1,0 +1,10 @@
+= Hashicorp Vault
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 02-02-2024
+
+
+https://access.redhat.com/articles/6999546
+Red Hat Ansible Automation Platform - HashiCorp Vault Signed SSH Credentials
+
+https://developer.hashicorp.com/vault/install

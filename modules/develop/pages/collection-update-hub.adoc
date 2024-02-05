@@ -4,11 +4,6 @@ Nick Hardiman
 :revdate: 14-12-2023
 
 
-
- 
-
-
-
 == get a Private Automation Hub API Token
 
 Authorizes ansible-galaxy to make changes using the PAH API.

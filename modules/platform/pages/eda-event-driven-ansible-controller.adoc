@@ -1,13 +1,25 @@
-= EDA (Event Driven Ansible) controller
+= EDA (Event Driven Ansible)
 Nick Hardiman <nhardima@redhat.com>
 :source-highlighter: highlight.js
 :toc:
-:revdate: 10-12-2023
+:revdate: 13-11-2023
+
+== EDA/AAP comparison 
+
+----
+                 EDA  AAP
+      EDA Controller  Automation Controller
+Decision Environment  Execution Environment
+            rulebook  playbook
+    ansible-rulebook  ansible-playbook
+----
+
+== links 
+
+https://github.com/nickhardiman/articles-aap/blob/main/modules/platform/pages/eda-event-driven-ansible-controller.adoc
 
 install
 https://access.redhat.com/documentation/en-us/red_hat_ansible_automation_platform/2.4/html-single/getting_started_with_event-driven_ansible_guide/index#installation-of-eda-controller
-
-https://www.redhat.com/en/blog/automate-performance-management-performance-co-pilot
 
 https://www.linkedin.com/pulse/event-driven-automation-ansible-magnus-glantz
 
@@ -18,3 +30,72 @@ https://github.com/ansible/event-driven-ansible/tree/main/extensions/eda/plugins
 https://www.redhat.com/en/interactive-labs/ansible#event-driven-automation
 
 https://www.ansible.com/blog/introducing-event-driven-ansible
+
+https://play.instruqt.com/redhat/invite/wzlzehptcqi6
+
+PCP (Performance Co-Pilot) and EDA
+https://www.redhat.com/en/blog/automate-performance-management-performance-co-pilot
+
+
+== EDA Controller 
+
+
+== DE (Decision Environment)
+
+de-supported-rhel8:latest
+
+== collection ansible.eda
+
+Decision Environment de-supported-rhel8:latest contains the collection ansible.eda 
+
+== source plugins 
+
+https://github.com/ansible/event-driven-ansible/tree/main/extensions/eda/plugins/event_source
+
+== source plugins in collection ansible.eda
+
+which ships plugins for:
+
+* Alertmanager
+* AWS SQS
+* Azure Service Bus
+* Apache Kafka
+* Webhook
+
+== other source plugins 
+
+* https://github.com/arista-netdevops-community/Ansible-Event-Driven-Automation-Examples
+* https://github.com/arista-netdevops-community/Ansible-Event-Driven-Automation-Examples/blob/main/nats/nats-eda.py
+
+rulebook: nats-example.yml
+----
+Source Plugin        Description
+--------------------+------------------
+Alertmanager         An event source module for receiving events via a webhook from Promietheus Alertmanager
+Azure Service Bus    An ansible-rulebook event source module for receiving events from an Azure service bus
+File                 An ansible-rulebook event source plugin for loading facts from YAML files initially and when the file changes
+Kafka                An ansible-rulebook event source plugin for receiving events via a kafka topic
+Range                An ansible-rulebook event source plugin for generating events with an increasing index i
+URL Check            An ansible-rulebook event source plugin that polls a set of URLs and sends events with their status
+Webhook              An ansible-rulebook event source module for receiving events via a webhook
+Watchdog             An ansible-rulebook event source plugin for watching file system changes
+--------------------+------------------
+----
+
+
+== learn 
+
+https://play.instruqt.com/redhat/invite/wzlzehptcqi6/tracks/getting-started-eda-controller/challenges/eda-project-import/assignment#tab-0
+
+== ‌Lab Plus: Event Driven Ansible Labs
+
+This hands-on lab training provides you with a hands-on lab environment to install Red Hat Event-Driven Ansible and rulebook demonstrations explaining EDA concepts.
+
+Introduction to Event-Driven Ansible Rulebooks, Event Sources, and Filters (Part 1)
+https://learning.redhat.com/enrol/index.php?id=5327
+
+‌Introduction to Event-Driven Ansible Controller UI (Part 2)
+https://start.learning.redhat.com/totara/5328
+
+
+== rulebook 

@@ -2,4 +2,4 @@
 ** xref:molecule.adoc[]
 ** xref:ansible-lint.adoc[]
 ** xref:pre-commit.adoc[]
-
+** xref:collection-test.adoc[]

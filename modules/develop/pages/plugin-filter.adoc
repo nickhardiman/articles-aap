@@ -1,0 +1,10 @@
+= write a filter plugin
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 02-02-2024
+
+== links
+
+https://docs.ansible.com/ansible/latest/plugins/plugins.html
+
+https://www.dasblinkenlichten.com/creating-ansible-filter-plugins/

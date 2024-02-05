@@ -28,6 +28,7 @@ nav:
 - modules/test/nav.adoc 
 - modules/operate/nav.adoc 
 - modules/upgrade/nav.adoc 
+- modules/integrate/nav.adoc 
 - modules/workflow/nav.adoc 
 - modules/deprovision/nav.adoc 
 - modules/integrate/nav.adoc 

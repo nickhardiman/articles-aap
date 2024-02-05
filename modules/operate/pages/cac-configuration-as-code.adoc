@@ -7,6 +7,15 @@ Nick Hardiman <nhardima@redhat.com>
 
 == links 
 
+part of 
+https://en.wikipedia.org/wiki/Software_configuration_management
+
+kinda sorta like 
+
+* https://en.wikipedia.org/wiki/Software_build
+* https://en.wikipedia.org/wiki/Build_automation
+
+lab
 https://aap2.demoredhat.com/exercises/ansible_config_as_code/
 
 Tom Page's articles

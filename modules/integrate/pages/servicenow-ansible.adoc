@@ -1,0 +1,381 @@
+= Ansible and ServiceNow
+Nick Hardiman <nhardima@redhat.com>
+:source-highlighter: highlight.js
+:toc: 
+:revdate: 31-10-2023
+
+
+== Ansible content collection
+
+Red Hat Ansible Certified Content Collection for ServiceNow ITSM
+
+servicenow.itsm v2.3.0 available on galaxy and RH hub
+https://console.redhat.com/ansible/automation-hub/repo/published/servicenow/itsm/docs/
+https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/docs/
+
+Ansible API for ServiceNow ITSM
+add-on for ServiceNow?
+something to do with Rome release in 2021
+maybe not relevant
+https://www.ansible.com/blog/introducing-the-ansible-api-for-servicenow-itsm
+
+
+== learn
+
+Automating ServiceNow with Red Hat Ansible Automation Platform
+https://www.redhat.com/sysadmin/servicenow-ansible-automation
+
+lab
+https://play.instruqt.com/embed/redhat/tracks/getting-started-servicenow-automation/challenges/incident-creation/assignment
+https://github.com/shadowman-lab/Ansible-SNOW/tree/main
+
+Demos for Ansible Use in making updates to ServiceNow including Change Requests, Tickets, Users, Catalog Items, and the cmdb
+https://github.com/shadowman-lab/Ansible-SNOW/tree/main
+Connecting ServiceNow and Ansible Automation Platform (AAP)
+https://github.com/shadowman-lab/Ansible-SNOW/tree/main/SNOWSetup
+
+
+== ServiceNow --> Ansible
+
+ServiceNow/AAP Integration Instructions using Rest Messages
+https://github.com/shadowman-lab/Ansible-SNOW/tree/main/SNOWSetup#servicenowaap-integration-instructions-using-rest-messages
+
+== ServiceNow --> Ansible with ansible spoke 
+
+ServiceNow/AAP Integration Instructions using Ansible Spoke
+https://github.com/shadowman-lab/Ansible-SNOW/tree/main/SNOWSetup#servicenowaap-integration-instructions-using-ansible-spoke
+
+something to do with servicenow client auth
+need to an application in AAP
+
+https://docs.servicenow.com/bundle/utah-integrate-applications/page/administer/integrationhub-store-spokes/concept/ansible-spoke.html
+https://docs.ansible.com/automation-controller/latest/html/userguide/applications_auth.html
+https://cloudautomation.pharriso.co.uk/post/aap_snow_spoke/
+
+
+
+== Ansible --> ServiceNow
+
+https://github.com/shadowman-lab/Ansible-SNOW/tree/main/SNOWSetup#have-aap-reach-out-to-servicenow
+
+. Order a PDI.
+See https://developer.servicenow.com/dev.do.!/guides/utah/developer-program/pdi-guide/personal-developer-instance-guide-introduction[Personal Developer Instance (PDI) Guide]
+. Wait a few minutes for delivery of the new instance and confirmation e-mail.
+. Copy host, user and password from the email.
+----
+     export SN_HOST=https://dev12345.service-now.com/
+     export SN_USERNAME=admin
+     export SN_PASSWORD='abcph_^<%.5s'
+----
+. Install the Ansible servicenow.itsm collection.
+----
+     ansible-galaxy collection install servicenow.itsm
+----
+. Run the playbook.
+
+
+Install the Ansible servicenow.itsm collection.
+----
+ansible-galaxy collection install servicenow.itsm
+----
+
+Write a playbook 
+
+Check web UI
+https://dev12345.service-now.com/now/nav/ui/classic/params/target/incident_list.do
+
+
+order a PDI 
+Personal Developer Instance (PDI) Guide
+https://developer.servicenow.com/dev.do#!/guides/utah/developer-program/pdi-guide/personal-developer-instance-guide-introduction
+
+install ServiceNow collection
+----
+ansible-galaxy collection install servicenow.itsm
+----
+
+Write a playbook 
+----
+[nick@gateway servicenow]$ pwd
+/home/nick/servicenow
+[nick@gateway servicenow]$ cat ansible-incident.yml 
+--- 
+# Prerequisites to running this playbook
+#
+# Order a PDI.
+#     See:
+#     Personal Developer Instance (PDI) Guide
+#     https://developer.servicenow.com/dev.do#!/guides/utah/developer-program/pdi-guide/personal-developer-instance-guide-introduction
+# Wait a few minutes for delivery of the new instance and confirmation e-mail.
+# Copy host, user and password from the email.
+#     export SN_HOST=https://dev12345.service-now.com/
+#     export SN_USERNAME=admin
+#     export SN_PASSWORD='abcph_^<%.5s'
+# Install the Ansible servicenow.itsm collection.
+#     ansible-galaxy collection install servicenow.itsm
+#
+- name: SNOW incident creation
+  hosts: localhost
+  gather_facts: false
+  connection: local
+  tasks:
+
+  - name: Create incident
+    servicenow.itsm.incident:
+      # obtain these values from environment variables 
+      # SN_HOST, SN_USERNAME and SN_PASSWORD
+      # or enter them here. 
+      #instance:
+      #  host: https://dev12345.service-now.com/
+      #  username: admin
+      #  password: 'abcph_^<%.5s'
+
+      state: new
+      caller: employee
+      short_description: User is not receiving email
+      description: User has been unable to receive email for the past 15 minutes
+      impact: low
+      urgency: low
+
+      other:
+        expected_start: 2024-02-12
+    register: r_incident
+
+  - debug:
+      var: r_incident
+[nick@gateway servicenow]$ 
+----
+
+Run playbook
+----
+[nick@gateway servicenow]$ ansible-playbook ansible-incident.yml 
+[WARNING]: provided hosts list is empty, only localhost is available. Note that the implicit
+localhost does not match 'all'
+
+PLAY [SNOW test] *****************************************************************************
+
+TASK [Create incident] ***********************************************************************
+fatal: [localhost]: FAILED! => {"changed": false, "msg": "No sys_user records match the {'user_name': 'Joe Employee', 'sysparm_exclude_reference_link': 'true', 'sysparm_limit': 1000} query."}
+
+PLAY RECAP ***********************************************************************************
+localhost                  : ok=0    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+
+[nick@gateway servicenow]$ vim ansible-incident.yml 
+[nick@gateway servicenow]$ ansible-playbook ansible-incident.yml 
+[WARNING]: provided hosts list is empty, only localhost is available. Note that the implicit
+localhost does not match 'all'
+
+PLAY [SNOW test] *****************************************************************************
+
+TASK [Create incident] ***********************************************************************
+changed: [localhost]
+
+TASK [debug] *********************************************************************************
+ok: [localhost] => {
+    "r_incident": {
+        "changed": true,
+        "diff": {
+            "after": {
+                "active": "true",
+                "activity_due": "",
+                "additional_assignee_list": "",
+                "approval": "not requested",
+                "approval_history": "",
+                "approval_set": "",
+                "assigned_to": "",
+                "assignment_group": "",
+                "attachments": [],
+                "business_duration": "",
+                "business_impact": "",
+                "business_service": "",
+                "business_stc": "",
+                "calendar_duration": "",
+                "calendar_stc": "",
+                "caller_id": "681ccaf9c0a8016400b98a06818d57c7",
+                "category": "inquiry",
+                "cause": "",
+                "caused_by": "",
+                "child_incidents": "0",
+                "close_code": "",
+                "close_notes": "",
+                "closed_at": "",
+                "closed_by": "",
+                "cmdb_ci": "",
+                "comments": "",
+                "comments_and_work_notes": "",
+                "company": "31bea3d53790200044e0bfc8bcbe5dec",
+                "contact_type": "",
+                "contract": "",
+                "correlation_display": "",
+                "correlation_id": "",
+                "delivery_plan": "",
+                "delivery_task": "",
+                "description": "User has been unable to receive email for the past 15 minutes",
+                "due_date": "",
+                "escalation": "0",
+                "expected_start": "2024-02-12 00:00:00",
+                "follow_up": "",
+                "group_list": "",
+                "hold_reason": "",
+                "impact": "low",
+                "incident_state": "1",
+                "knowledge": "false",
+                "location": "",
+                "made_sla": "true",
+                "notify": "1",
+                "number": "INC0010002",
+                "opened_at": "2023-11-08 21:18:40",
+                "opened_by": "6816f79cc0a8016401c5a33be04be441",
+                "order": "",
+                "origin_id": "",
+                "origin_table": "",
+                "parent": "",
+                "parent_incident": "",
+                "priority": "5",
+                "problem_id": "",
+                "reassignment_count": "0",
+                "reopen_count": "0",
+                "reopened_by": "",
+                "reopened_time": "",
+                "resolved_at": "",
+                "resolved_by": "",
+                "rfc": "",
+                "route_reason": "",
+                "service_offering": "",
+                "severity": "3",
+                "short_description": "User is not receiving email",
+                "sla_due": "",
+                "state": "new",
+                "subcategory": "",
+                "sys_class_name": "incident",
+                "sys_created_by": "admin",
+                "sys_created_on": "2023-11-08 21:18:40",
+                "sys_domain": "global",
+                "sys_domain_path": "/",
+                "sys_id": "496bb1039352311031f1704efaba1017",
+                "sys_mod_count": "0",
+                "sys_tags": "",
+                "sys_updated_by": "admin",
+                "sys_updated_on": "2023-11-08 21:18:40",
+                "task_effective_number": "INC0010002",
+                "time_worked": "",
+                "universal_request": "",
+                "upon_approval": "proceed",
+                "upon_reject": "cancel",
+                "urgency": "low",
+                "user_input": "",
+                "watch_list": "",
+                "work_end": "",
+                "work_notes": "",
+                "work_notes_list": "",
+                "work_start": ""
+            },
+            "before": null
+        },
+        "failed": false,
+        "record": {
+            "active": "true",
+            "activity_due": "",
+            "additional_assignee_list": "",
+            "approval": "not requested",
+            "approval_history": "",
+            "approval_set": "",
+            "assigned_to": "",
+            "assignment_group": "",
+            "attachments": [],
+            "business_duration": "",
+            "business_impact": "",
+            "business_service": "",
+            "business_stc": "",
+            "calendar_duration": "",
+            "calendar_stc": "",
+            "caller_id": "681ccaf9c0a8016400b98a06818d57c7",
+            "category": "inquiry",
+            "cause": "",
+            "caused_by": "",
+            "child_incidents": "0",
+            "close_code": "",
+            "close_notes": "",
+            "closed_at": "",
+            "closed_by": "",
+            "cmdb_ci": "",
+            "comments": "",
+            "comments_and_work_notes": "",
+            "company": "31bea3d53790200044e0bfc8bcbe5dec",
+            "contact_type": "",
+            "contract": "",
+            "correlation_display": "",
+            "correlation_id": "",
+            "delivery_plan": "",
+            "delivery_task": "",
+            "description": "User has been unable to receive email for the past 15 minutes",
+            "due_date": "",
+            "escalation": "0",
+            "expected_start": "2024-02-12 00:00:00",
+            "follow_up": "",
+            "group_list": "",
+            "hold_reason": "",
+            "impact": "low",
+            "incident_state": "1",
+            "knowledge": "false",
+            "location": "",
+            "made_sla": "true",
+            "notify": "1",
+            "number": "INC0010002",
+            "opened_at": "2023-11-08 21:18:40",
+            "opened_by": "6816f79cc0a8016401c5a33be04be441",
+            "order": "",
+            "origin_id": "",
+            "origin_table": "",
+            "parent": "",
+            "parent_incident": "",
+            "priority": "5",
+            "problem_id": "",
+            "reassignment_count": "0",
+            "reopen_count": "0",
+            "reopened_by": "",
+            "reopened_time": "",
+            "resolved_at": "",
+            "resolved_by": "",
+            "rfc": "",
+            "route_reason": "",
+            "service_offering": "",
+            "severity": "3",
+            "short_description": "User is not receiving email",
+            "sla_due": "",
+            "state": "new",
+            "subcategory": "",
+            "sys_class_name": "incident",
+            "sys_created_by": "admin",
+            "sys_created_on": "2023-11-08 21:18:40",
+            "sys_domain": "global",
+            "sys_domain_path": "/",
+            "sys_id": "496bb1039352311031f1704efaba1017",
+            "sys_mod_count": "0",
+            "sys_tags": "",
+            "sys_updated_by": "admin",
+            "sys_updated_on": "2023-11-08 21:18:40",
+            "task_effective_number": "INC0010002",
+            "time_worked": "",
+            "universal_request": "",
+            "upon_approval": "proceed",
+            "upon_reject": "cancel",
+            "urgency": "low",
+            "user_input": "",
+            "watch_list": "",
+            "work_end": "",
+            "work_notes": "",
+            "work_notes_list": "",
+            "work_start": ""
+        }
+    }
+}
+
+PLAY RECAP ***********************************************************************************
+localhost                  : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+[nick@gateway servicenow]$ 
+----
+
+Check web UI
+https://dev12345.service-now.com/now/nav/ui/classic/params/target/incident_list.do

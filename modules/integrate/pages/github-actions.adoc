@@ -1,0 +1,18 @@
+= Github Actions
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 02-02-2024
+
+== links
+
+https://github.com/arillso/action.ansible.collection
+
+https://github.com/marketplace/actions/changed-files
+
+https://github.com/marketplace/actions/run-ansible-lint
+
+https://docs.github.com/en/actions/learn-github-actions/understanding-github-actions
+
+https://www.ansible.com/blog/ansible-linting-with-github-actions
+
+https://github.com/ansible/ansible-lint/blob/main/action.yml#L71C29-L71C35

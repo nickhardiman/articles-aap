@@ -25,4 +25,378 @@ https://docs.servicenow.com/bundle/vancouver-product-directory/page/product-dire
 https://docs.servicenow.com/bundle/vancouver-platform-user-interface/page/get-started/servicenow-overview/concept/set-up-preferences-next-experience.html
 
 
+== Personal Developer Instance (PDI)
 
+ServiceNow offers free Personal Developer Instances (PDI) to registered users
+
+https://developer.servicenow.com/dev.do#!/home 
+> Account > My Instance > Request Instance
+
+Personal Developer Instance (PDI) Guide
+https://developer.servicenow.com/dev.do#!/guides/utah/developer-program/pdi-guide/personal-developer-instance-guide-introduction
+
+
+== my PDI 
+
+=== create 
+
+=== change password
+
+[source,shell]
+----
+Your instance URL: https://dev12345.service-now.com
+Username: admin
+Current password: some-random-string
+----
+
+profile > set password > long-random-string
+change password > short-random-string
+
+
+=== destroy 
+
+https://developer.servicenow.com/dev.do#!/home 
+> Account > My Instance > Release instance
+
+
+== releases 
+
+https://www.servicenow.com/community/now-platform-articles/servicenow-versions-release/ta-p/2312014
+
+current  
+
+* Vancouver
+
+previous
+
+* Utah
+* Tokyo
+* San Diego
+
+
+== docs 
+
+https://docs.servicenow.com/bundle/vancouver-product-directory/page/product-directory/reference/product-directory.html
+https://docs.servicenow.com/bundle/vancouver-platform-user-interface/page/get-started/servicenow-overview/concept/set-up-preferences-next-experience.html
+
+EDA Demos - ServiceNow integration
+https://github.com/kubealex/event-driven-automation
+
+
+== ServiceNow Welcome Webinars
+
+ServiceNow Welcome Webinars is our latest series for new customers! 
+Start your ServiceNow journey by joining us the 
+2nd Wednesday of each month for an introduction to ServiceNow resources. 
+
+
+== learning plans
+
+https://developer.servicenow.com/dev.do#!/learn/learning-plans/vancouver
+a learning plan is a collection of learning modules
+
+module - basics
+https://developer.servicenow.com/dev.do#!/learn/learning-plans/tokyo/new_to_servicenow/app_store_learnv2_buildmyfirstapp_tokyo_servicenow_basics_objectives
+
+
+== servicenow learning
+
+A newer site with on-demand courses 
+linked to their Single Sign On
+https://signon.service-now.com/x_snc_sso_auth.do?pageId=factor-verify
+
+https://nowlearning.servicenow.com/lxp/en/now-platform/welcome-to-servicenow?course_id=023708df1bc0119cf95e99b8bd4bcb76&id=learning_course_prev
+https://nowlearning.servicenow.com/lxp/en/pages/journey-overview?id=journey_overview&journey_id=55f79b4a1b96add013f9a6c1b24bcb30
+
+https://developer.servicenow.com/dev.do#!/learn/learning-plans/tokyo/new_to_servicenow/app_store_learnv2_buildmyfirstapp_tokyo_servicenow_basics_objectives
+
+
+=== servicenow learning instance and simulator
+
+simulator 
+
+inline canvas-style point and click thing
+
+instance
+
+used with new servicenow learning courses
+
+mine
+
+https://nowlearning-nlinst01190659-001.lab.service-now.com/login_redirect.do?sysparm_stack=no
+
+
+
+== learning plan - New to ServiceNow
+
+https://developer.servicenow.com/dev.do#!/learn/learning-plans/vancouver/new_to_servicenow
+16 modules
+
+[source,shell]
+----
+Using Flow Designer
+Importing Data
+Client-side Scripting
+Source Control
+Data Visualization
+ServiceNow Basics
+Guided App Creator and ServiceNow Studio
+Server-side Scripting
+Securing Applications Against Unauthorized Users
+Create the NeedIt Application and Application Files
+Service Portal Introduction
+Scheduled Script Executions and Events
+Securing Applications Against Access from Other Applications
+Introduction to Scripting in ServiceNow
+Notifications
+Application Properties
+----
+
+
+== career journeys 
+
+https://nowlearning.servicenow.com/lxp/en/pages/career-journey?id=journey
+[source,shell]
+----
+System Administrator 
+Application Developer
+Implementer
+Business Process Analyst
+Technical Project Manager
+----
+
+
+== career journey - System Administrator Levels
+
+Associate System Administrator
+
+Professional System Administrator
+
+Expert System Administrator
+
+== career journey - Associate System Administrator
+
+https://nowlearning.servicenow.com/lxp/en/pages/journey-overview?id=journey_overview&journey_id=55f79b4a1b96add013f9a6c1b24bcb30
+
+== certification
+
+https://www.servicenow.com/services/training-and-certification/journey/#/
+
+
+== API 
+
+https://dev12345.service-now.com/now/nav/ui/classic/params/target/%24restapi.do
+created using REST API explorer
+
+[source,shell]
+----
+Namespace    now
+API Name     Table API
+API Version  latest
+Create a record  (POST)
+----
+
+=== post test 
+
+Did create a record
+Did not set urgency or priority fields
+{"short_description":"hello world 3","caller_id":"Joe Employee","urgency":"2","priority":"2"}
+
+[source,shell]
+----
+PDI=dev12345.service-now.com
+
+curl -v \
+  "https://$PDI/api/now/table/incident" \
+  --request POST \
+  --header "Accept:application/json" \
+  --header "Content-Type:application/json" \
+  --data "{\"short_description\":\"hello world 5\",\"caller_id\":\"Joe Employee\",\"urgency\":1}" \
+  --user "admin":"'some-random-password'" \
+| jq .
+----
+
+sys_id 
+seems to be important for finding the new record.
+It is buried in the many attributes of the response body.
+
+[source,shell]
+----
+[nick@host ~]$ curl -v "https://dev12345.service-now.com/api/now/table/incident" --request POST --header "Accept:application/json" --header "Content-Type:application/json" --data "{\"short_description\":\"hello world 6\",\"caller_id\":\"Joe Employee\"}" --user 'admin':'some-random-password' | jq .
+Note: Unnecessary use of -X or --request, POST is already inferred.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0*   Trying 149.96.16.11:443...
+* Connected to dev12345.service-now.com (149.96.16.11) port 443 (#0)
+* Server certificate:
+*  subject: C=US; ST=California; L=San Diego; O=ServiceNow, Inc.; CN=*.service-now.com
+...
+> POST /api/now/table/incident HTTP/1.1
+> Host: dev12345.service-now.com
+> Authorization: Basic YWRtaW46RHEzPW9Kb21aSjEl
+> User-Agent: curl/7.76.1
+> Accept:application/json
+> Content-Type:application/json
+> Content-Length: 64
+...
+< HTTP/1.1 201 Created
+< Server-Timing: sem_wait;dur=0, sesh_wait;dur=0
+< X-Is-Logged-In: true
+< X-Transaction-ID: 87618c2c7210
+< Location: https://dev12345.service-now.com/api/now/table/incident/4f6108ec9752311054bafca6f053afe3
+< X-Content-Type-Options: nosniff
+< Pragma: no-store,no-cache
+< Cache-Control: no-cache,no-store,must-revalidate,max-age=-1
+< Expires: 0
+< Content-Type: application/json;charset=UTF-8
+< Transfer-Encoding: chunked
+< Date: Tue, 31 Oct 2023 18:00:59 GMT
+< Server: ServiceNow
+< Set-Cookie: JSESSIONID=4C6A8543940FAAA18030E679F4D898BA; Path=/; HttpOnly; SameSite=None; Secure
+< Set-Cookie: glide_user=; Max-Age=0; Expires=Thu, 01-Jan-1970 00:00:10 GMT; Path=/; Secure; HttpOnly; SameSite=None; Secure
+< Set-Cookie: glide_user_session=; Max-Age=0; Expires=Thu, 01-Jan-1970 00:00:10 GMT; Path=/; Secure; HttpOnly; SameSite=None; Secure
+< Set-Cookie: glide_user_route=glide.782eab860cc388f784f37d4761ecdc97; Max-Age=2147483647; Expires=Sun, 18-Nov-2091 21:15:06 GMT; Path=/; Secure; HttpOnly; SameSite=None; Secure
+< Set-Cookie: glide_session_store=43618C2C9752311054BAFCA6F053AF72; Max-Age=1800; Expires=Tue, 31-Oct-2023 18:30:59 GMT; Path=/; Secure; HttpOnly; SameSite=None; Secure
+< Set-Cookie: BIGipServerpool_dev12345=747089674.55872.0000; path=/; Httponly; Secure; SameSite=None; Secure
+< Strict-Transport-Security: max-age=63072000; includeSubDomains
+< 
+...
+{
+  "result": {
+    "parent": "",
+    "made_sla": "true",
+    "caused_by": "",
+    "watch_list": "",
+    "upon_reject": "cancel",
+    "sys_updated_on": "2023-10-31 18:00:59",
+    "child_incidents": "0",
+    "hold_reason": "",
+    "origin_table": "",
+    "task_effective_number": "INC0010010",
+    "approval_history": "",
+    "number": "INC0010010",
+    "resolved_by": "",
+    "sys_updated_by": "admin",
+    "opened_by": {
+      "link": "https://dev12345.service-now.com/api/now/table/sys_user/6816f79cc0a8016401c5a33be04be441",
+      "value": "6816f79cc0a8016401c5a33be04be441"
+    },
+    "user_input": "",
+    "sys_created_on": "2023-10-31 18:00:59",
+    "sys_domain": {
+      "link": "https://dev12345.service-now.com/api/now/table/sys_user_group/global",
+      "value": "global"
+    },
+    "state": "1",
+    "route_reason": "",
+    "sys_created_by": "admin",
+    "knowledge": "false",
+    "order": "",
+    "calendar_stc": "",
+    "closed_at": "",
+    "cmdb_ci": "",
+    "delivery_plan": "",
+    "contract": "",
+    "impact": "3",
+    "active": "true",
+    "work_notes_list": "",
+    "business_service": "",
+    "business_impact": "",
+    "priority": "5",
+    "sys_domain_path": "/",
+    "rfc": "",
+    "time_worked": "",
+    "expected_start": "",
+    "opened_at": "2023-10-31 18:00:59",
+    "business_duration": "",
+    "group_list": "",
+    "work_end": "",
+    "caller_id": {
+      "link": "https://dev12345.service-now.com/api/now/table/sys_user/681ccaf9c0a8016400b98a06818d57c7",
+      "value": "681ccaf9c0a8016400b98a06818d57c7"
+    },
+    "reopened_time": "",
+    "resolved_at": "",
+    "approval_set": "",
+    "subcategory": "",
+    "work_notes": "",
+    "universal_request": "",
+    "short_description": "hello world 6",
+    "close_code": "",
+    "correlation_display": "",
+    "delivery_task": "",
+    "work_start": "",
+    "assignment_group": "",
+    "additional_assignee_list": "",
+    "business_stc": "",
+    "cause": "",
+    "description": "",
+    "origin_id": "",
+    "calendar_duration": "",
+    "close_notes": "",
+    "notify": "1",
+    "service_offering": "",
+    "sys_class_name": "incident",
+    "closed_by": "",
+    "follow_up": "",
+    "parent_incident": "",
+    "sys_id": "4f6108ec9752311054bafca6f053afe3",
+    "contact_type": "",
+    "reopened_by": "",
+    "incident_state": "1",
+    "urgency": "3",
+    "problem_id": "",
+    "company": {
+      "link": "https://dev12345.service-now.com/api/now/table/core_company/31bea3d53790200044e0bfc8bcbe5dec",
+      "value": "31bea3d53790200044e0bfc8bcbe5dec"
+    },
+    "reassignment_count": "0",
+    "activity_due": "",
+    "assigned_to": "",
+    "severity": "3",
+    "comments": "",
+    "approval": "not requested",
+    "sla_due": "",
+    "comments_and_work_notes": "",
+    "due_date": "",
+    "sys_mod_count": "0",
+    "reopen_count": "0",
+    "sys_tags": "",
+    "escalation": "0",
+    "upon_approval": "proceed",
+    "correlation_id": "",
+    "location": "",
+    "category": "inquiry"
+  }
+}
+[nick@host ~]$ 
+----
+
+
+=== get test 
+
+need the sys_id which isn't displayed in the web UI incident table or editing form.
+It is in the URL. 
+%3D is urlencoded '=' (https://www.w3schools.com/tags/ref_urlencode.ASP)
+https://dev12345.service-now.com/now/nav/ui/classic/params/target/incident.do%3Fsys_id%3D72a337509752311054bafca6f053af77%26sysparm_view%3Dess%26sysparm_record_target%3Dincident%26sysparm_record_row%3D8%26sysparm_record_rows%3D12%26sysparm_record_list%3DORDERBYnumber
+
+[source,shell]
+----
+curl -v \
+  "https://dev12345.service-now.com/api/now/table/incident/72a337509752311054bafca6f053af77"     \
+  --request GET    \
+  --header "Accept:application/json"   \
+  --user 'admin':'some-random-password'   \
+| jq .
+----
+
+
+== MID (management, instrumentation, and discovery) Server
+
+https://www.servicenow.com/content/dam/servicenow-assets/public/en-us/doc-type/success/quick-answer/mid-server-basics.pdf
+A management, instrumentation, and discovery (MID) Server is a Java application that runs on a server on your local network.
+MID Servers facilitate communication and data movement between a single ServiceNow® instance and external applications,
+data sources, and services.
+What is a MID Server used for?
+MID Servers help you to control and secure how ServiceNow communicates with your organization’s systems, especially those
+behind a firewall. This supports four primary use cases: 

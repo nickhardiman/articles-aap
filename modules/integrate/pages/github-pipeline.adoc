@@ -1,0 +1,8 @@
+= set up a pipeline in Github
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 02-02-2024
+
+== links
+
+https://docs.github.com/en/rest?apiVersion=2022-11-28
