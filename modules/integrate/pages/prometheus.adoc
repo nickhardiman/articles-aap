@@ -8,11 +8,14 @@ Nick Hardiman
 
 https://o11y.eu/blog/prometheus-server-tls/
 
-https://www.ansible.com/blog/red-hat-ansible-tower-monitoring-using-prometheus-node-exporter-grafana
-
-
 prometheus time-series DB and tools 
 https://prometheus.io/
+
+monitor ansible tower
+https://www.ansible.com/blog/red-hat-ansible-tower-monitoring-using-prometheus-node-exporter-grafana
+
+monitor keycloak
+https://www.keycloak.org/keycloak-benchmark/kubernetes-guide/latest/util/prometheus
 
 prometheus is written in Go.
 https://github.com/prometheus/prometheus
