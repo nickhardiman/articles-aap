@@ -1,0 +1,8 @@
+= provisioning callback from Satellite
+Nick Hardiman <nhardima@redhat.com>
+:source-highlighter: highlight.js
+:revdate: 09-02-2024
+
+== links 
+
+https://www.redhat.com/en/blog/satellite-and-ansible-tower-integration-part-2-provisioning-callbacks

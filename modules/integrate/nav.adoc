@@ -12,4 +12,6 @@
 ** xref:steampunk-spotter.adoc[]
 ** xref:vmware.adoc[]
 ** xref:prometheus.adoc[]
+** xref:provisioning-callback.adoc[]
+** xref:webhook-template.adoc[]
 
