@@ -96,7 +96,7 @@ drop DB?
 manifest
 https://access.redhat.com/documentation/en-us/reference_architectures/2021/html-single/deploying_ansible_automation_platform_2.1/index#sub_manifest
 
-In order to successfully generate your subscription manifest:
+Generate your subscription manifest.
 
 . Login to
 https://access.redhat.com/management/subscription_allocations
@@ -120,7 +120,7 @@ Accept the end user license agreement.
 [cols="1,1"]  
 |===
 |Name           
-|aap2-emp-sku
+|aap2-my-sku
 
 |Type           
 |SAM 1.4
@@ -131,3 +131,14 @@ Accept the end user license agreement.
 |UUID           
 |1c888b2e-f848-4bef-bd18-d6465d1e6cc4
 |===
+
+Import manifest.
+
+. Return to the Ansible Automation Platform dashboard,
+. import manifest.zip
+. click Next.
+. (Recommended) Enable user analytics and Insights for Ansible Automation Platform by providing your Red Hat or Red Hat Satellite credentials and click Next.
+Accept the end user license agreement.
+
+If you have 2 manifests, when you upload the 2nd it will override the first.
+

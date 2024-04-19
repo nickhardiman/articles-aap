@@ -6,3 +6,17 @@ Nick Hardiman
 == links
 
 https://github.com/gitleaks/gitleaks
+
+
+== file .gitleaks.toml
+
+https://github.com/nickhardiman/ansible-playbook-supply/blob/main/.gitleaks.toml
+
+[source,INI]
+----
+[allowlist]
+  description = "Allowlist"
+  files = [
+    '''phone_home\.sh$''',
+  ]
+----

@@ -31,6 +31,7 @@ https://www.redhat.com/en/interactive-labs/ansible#event-driven-automation
 
 https://www.ansible.com/blog/introducing-event-driven-ansible
 
+Event-Driven Ansible labs
 https://play.instruqt.com/redhat/invite/wzlzehptcqi6
 
 PCP (Performance Co-Pilot) and EDA
