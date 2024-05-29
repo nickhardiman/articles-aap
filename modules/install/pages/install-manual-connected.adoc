@@ -93,6 +93,16 @@ drop DB?
 
 == manifest
 
+Here are the current entitlement options.
+
+- Use your Red Hat or Satellite username and password to retrieve and import your subscription. This option works for one subscription running on one instance. 
+- Export a subscription manifest from access.redhat.com containing the desired subscription, and upload that manifest into the automation controller. This option works for running multiple instances, for adding multiple subscriptions to one manifest to use on one instance, or for use in an air-gapped environment.
+
+Only one manifest may be added to an automation controller. If a customer has two AAP subs and only one automation controller, a manifest must be created that includes both AAP subs to be used for the one automation controller.
+If you have 2 manifests, when you upload the 2nd it will override the first.
+
+Old subscriptions and future dated subscriptions won't show.
+
 manifest
 https://access.redhat.com/documentation/en-us/reference_architectures/2021/html-single/deploying_ansible_automation_platform_2.1/index#sub_manifest
 
@@ -140,5 +150,5 @@ Import manifest.
 . (Recommended) Enable user analytics and Insights for Ansible Automation Platform by providing your Red Hat or Red Hat Satellite credentials and click Next.
 Accept the end user license agreement.
 
-If you have 2 manifests, when you upload the 2nd it will override the first.
+
 

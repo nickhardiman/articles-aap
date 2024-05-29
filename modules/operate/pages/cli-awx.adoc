@@ -1,0 +1,30 @@
+= awx CLI 
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 13-04-2023
+
+
+== links
+
+AWX Command Line Interface
+https://docs.ansible.com/automation-controller/latest/html/controllercli/
+
+
+== install
+
+Either
+
+[source,shell]
+----
+pip3 install awxkit
+----
+
+or 
+
+[source,shell]
+----
+sudo dnf --enablerepo=ansible-automation-platform-2.4-for-rhel-9-x86_64-rpms  install automation-controller-cli
+----
+
+
+
