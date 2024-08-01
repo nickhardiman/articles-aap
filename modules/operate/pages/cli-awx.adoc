@@ -27,4 +27,34 @@ sudo dnf --enablerepo=ansible-automation-platform-2.4-for-rhel-9-x86_64-rpms  in
 ----
 
 
+== use
+
+Authenticate and list settings.
+Make the reply a little more human readable by not wrapping data in JSON.
+
+[source,shell]
+----
+awx \
+  --conf.host https://controlplane.site1.example.com \
+  --conf.username admin \
+  --conf.password 'Password;1' \
+  settings list  \
+  -f human
+----
+
+example
+
+[source,shell]
+----
+j[nick@host.site1.example.com redhat_cop]$ awx --conf.host https://controlplane.site1.example.com --conf.username admin --conf.password 'Password;1' settings list
+{
+     "ACTIVITY_STREAM_ENABLED": true,
+     "ACTIVITY_STREAM_ENABLED_FOR_INVENTORY_SYNC": false,
+...
+          }
+     }
+}
+[nick@host.site1.example.com redhat_cop]$ 
+----
+
 

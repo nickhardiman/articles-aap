@@ -14,5 +14,6 @@
 ** xref:prometheus.adoc[]
 ** xref:provisioning-callback.adoc[]
 ** xref:webhook-template.adoc[]
-** xref:inventory-satellite.adoc[]
+** xref:satellite-provision.adoc[]
+** xref:satellite-inventory.adoc[]
 

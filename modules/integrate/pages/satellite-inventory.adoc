@@ -1,4 +1,4 @@
-= provisioning callback from Satellite
+= inventory from Satellite
 Nick Hardiman <nhardima@redhat.com>
 :source-highlighter: highlight.js
 :revdate: 09-02-2024
@@ -6,3 +6,5 @@ Nick Hardiman <nhardima@redhat.com>
 == links 
 
 https://www.redhat.com/en/blog/satellite-and-ansible-tower-integration-part-1-inventory-integration
+
+https://cloudautomation.pharriso.co.uk/post/foreman_filtering/

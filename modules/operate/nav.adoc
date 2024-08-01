@@ -8,3 +8,4 @@
 ** xref:cli-automation-controller-service.adoc[]
 ** xref:awx-manage.adoc[]
 ** xref:cli-awx.adoc[]
+** xref:backup-restore.adoc[]

@@ -1,0 +1,10 @@
+= automation mesh
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 01-08-2024
+
+Chapter 3. Red Hat Ansible Automation Platform components
+3.5. Automation mesh
+https://docs.redhat.com/en/documentation/red_hat_ansible_automation_platform/2.4/html-single/red_hat_ansible_automation_platform_planning_guide/index#con-overview-automation-mesh_planning
+
+https://www.redhat.com/en/blog/peeling-back-the-layers-and-understanding-automation-mesh

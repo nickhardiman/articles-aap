@@ -1,0 +1,14 @@
+= provisioning callback from Satellite
+Nick Hardiman <nhardima@redhat.com>
+:source-highlighter: highlight.js
+:revdate: 09-02-2024
+
+== links
+
+5.2. Configuring provisioning callback for a host
+https://docs.redhat.com/en/documentation/red_hat_satellite/6.15/html-single/managing_configurations_using_ansible_integration/index#Configuring_Provisioning_Callback_for_a_Host_ansible
+
+cloud-init can "call back to Satellite Server"
+
+11.7. Using VMware cloud-init and userdata templates for provisioning
+https://docs.redhat.com/en/documentation/red_hat_satellite/6.15/html-single/provisioning_hosts/index#Using_VMware_Cloud_Init_and_Userdata_Templates_for_Provisioning_vmware-provisioning
