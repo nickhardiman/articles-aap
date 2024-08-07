@@ -1,0 +1,8 @@
+= inventory from Microsoft Active Directory
+Nick Hardiman <nhardima@redhat.com>
+:source-highlighter: highlight.js
+:revdate: 07-08-2024
+
+== links 
+
+https://docs.ansible.com/ansible/latest/collections/microsoft/ad/ldap_inventory.html
