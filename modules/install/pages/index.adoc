@@ -3,4 +3,48 @@ Nick Hardiman
 :source-highlighter: highlight.js
 :revdate: 24-11-2022
 
-I'm in the process of experimenting.
+[source,shell]
+----
+----
+
+== AAP install 
+
+. install installer
+. install certs
+. create installer inventory
+. install app
+
+
+== AAP configure 
+
+. manifest
+. controller settings
+. controller proxy
+. controller access
+. controller resources
+. hub access
+. hub collections
+. hub execution environments
+. controller execution environments
+
+== network 
+
+. open firewall ports
+. register with other systems - mail, logs, metrics, monitoring, alerting, inventory, CMDB, etc
+
+== content 
+
+. organization
+.. inventory
+... group
+... host
+.. team
+... credential
+... permission
+... user
+.... credential
+.... permission
+.. project
+... playbook
+... job template
+.. job

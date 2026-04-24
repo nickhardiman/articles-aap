@@ -19,3 +19,19 @@ todo
 * plugin filter
 * plugin lookup
 * plugin module
+
+== dev pipeline 
+
+. write a collection
+. write an example playbook
+. lint a playbook
+. create a test environment
+. run a playbook
+. delete a test environment
+. publish a collection
+
+== execution environment
+
+. use ansible image builder
+. build a container
+. publish a container

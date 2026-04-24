@@ -6,3 +6,42 @@ Nick Hardiman
 [source,shell]
 ----
 ----
+
+https://github.com/nickhardiman/ansible-playbook-aap-lab/blob/main/aap-lab-playbook%F0%9F%98%8E.yml
+
+== Linux VM
+
+. create a VM
+. provision a VM using libvirt and kickstart
+. provision a VM using network boot
+. provision a VM from a template
+
+. configure the VM - add infrastructure apps
+. configure the VM - tune the OS
+. patch the VM
+. test the VM - scan
+. make a template 
+
+. configure the VM - add users
+. configure the VM - add user apps
+. register with other systems - add a VM to a load-balancer 
+. register with other systems -  mail, logs, metrics, monitoring, alerting, inventory, CMDB, etc
+. check a VM - gather facts, cache, compliance, desired state
+
+. remove a VM from a load-balancer
+. stop apps
+. update passwords and certificates
+. backup
+. update the VM - errata, updates, bug fixes, security patches
+. upgrade the VM
+. reboot the VM
+
+. remove user apps
+. unregister with other systems
+. delete the VM
+
+== Windows VM
+
+== network
+
+
